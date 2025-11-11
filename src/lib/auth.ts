@@ -1,24 +1,9 @@
-import "dotenv/config";
-import jwt from "jsonwebtoken";
+import { generateToken } from "@/lib/jwt";
 
-const SECRET_KEY = process.env.JWT_SECRET;
-
-export function generateToken(payload: object) {
-    if (!SECRET_KEY) {
-        throw new Error("JWT_SECRET is not defined in environment variables");
+export async function validateUser(username: string, password: string) {
+    if (username === "admin" && password === "admin") {
+        const token = generateToken({ username, role: "admin" });
+        return { success: true, token };
     }
-
-    return jwt.sign(payload, SECRET_KEY, { expiresIn: "1h" });
-}
-
-export function verifyToken(token: string) {
-    if (!SECRET_KEY) {
-        throw new Error("JWT_SECRET is not defined in environment variables");
-    }
-
-    try {
-        return jwt.verify(token, SECRET_KEY);
-    } catch {
-        return null;
-    }
+    return { success: false, message: "Invalid credentials" };
 }
