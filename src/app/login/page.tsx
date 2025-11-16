@@ -18,7 +18,7 @@ export default function LoginPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
-    const { loading } = useAuthGuard({ requireAuth: false });
+    const { user, loading } = useAuthGuard({ requireAuth: false });
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,9 +28,8 @@ export default function LoginPage() {
         else toast.error(loginResponse.message);
     };
 
-    if (loading) {
-        return <Loading />;
-    }
+    if (loading) return <Loading />;
+    else if (user) return null;
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-background">

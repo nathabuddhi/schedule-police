@@ -7,9 +7,8 @@ import { useAuthGuard } from "@/hooks/use-auth-guard";
 export default function Page() {
     const { user, loading } = useAuthGuard({ requireAuth: true });
 
-    if (loading || !user) {
-        return <Loading />;
-    }
+    if (loading) return <Loading />;
+    else if (!user) return null;
 
     return (
         <div>
