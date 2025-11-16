@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { ModeToggle } from "@/components/theme-toggle";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/auth-context";
+import { useAuthGuard } from "@/hooks/use-auth-guard";
+import Loading from "@/components/loading";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -16,13 +18,19 @@ export default function LoginPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
+    const { loading } = useAuthGuard({ requireAuth: false });
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const success = await login(username, password);
-        if (success) router.push("/");
-        else toast.error("Invalid username or password.");
+        const loginResponse = await login(username, password);
+        if (loginResponse.success) router.push("/home");
+        else toast.error(loginResponse.message);
     };
+
+    if (loading) {
+        return <Loading />;
+    }
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-background">
