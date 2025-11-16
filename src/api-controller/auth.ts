@@ -24,7 +24,7 @@ export async function validateUser(
         const data = await response.json();
         if (data && data.access_token !== "") {
             await sql`
-                INSERT INTO assistant_messier (initial, messier_token, expires_at)
+                INSERT INTO assistants (initial, messier_token, expires_at)
                 VALUES (${username}, ${data.access_token}, ${new Date(
                 Date.now() + 24 * 59 * 60 * 1000
             )})
