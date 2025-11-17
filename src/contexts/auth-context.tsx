@@ -63,7 +63,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                     "Content-Type": "application/x-www-form-urlencoded",
                 },
                 credentials: "include",
-                body: new URLSearchParams({ username, password }).toString(),
+                body: new URLSearchParams({
+                    username: username.toUpperCase(),
+                    password,
+                }).toString(),
             });
 
             const loginResponse = await response.json();

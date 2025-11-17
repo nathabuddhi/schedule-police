@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import { ModeToggle } from "@/components/theme-toggle";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/auth-context";
 import { useAuthGuard } from "@/hooks/use-auth-guard";
 import Loading from "@/components/loading";
+import { BinusLogoWithRibbon } from "@/components/binus-logo";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -35,33 +35,8 @@ export default function LoginPage() {
         <div className="flex min-h-screen items-center justify-center bg-background">
             <Card className="w-full max-w-sm shadow-lg pt-0">
                 <CardHeader className="text-center">
-                    <div className="flex justify-start gap-4 pl-3">
-                        <Image
-                            src="/strip.png"
-                            alt="ribbon"
-                            loading="lazy"
-                            width={30}
-                            height={30}
-                            unoptimized
-                        />
-                        <Image
-                            src="/logo-lcas.png"
-                            alt="Logo"
-                            loading="lazy"
-                            width={210}
-                            height={100}
-                            unoptimized
-                            className="pt-2 dark:hidden"
-                        />
-                        <Image
-                            src="/logo-lcas-dark.png"
-                            alt="Logo"
-                            loading="lazy"
-                            width={210}
-                            height={100}
-                            unoptimized
-                            className="pt-2 hidden dark:block"
-                        />
+                    <div className="pl-5">
+                        <BinusLogoWithRibbon />
                     </div>
                     <CardTitle className="mt-2 text-lg font-semibold text-card-foreground">
                         LCAS - SChedule Police

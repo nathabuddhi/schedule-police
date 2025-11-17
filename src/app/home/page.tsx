@@ -2,6 +2,7 @@
 
 import Loading from "@/components/loading";
 import { LogoutButton } from "@/components/logout-button";
+import Navbar from "@/components/navbar";
 import { useAuthGuard } from "@/hooks/use-auth-guard";
 
 export default function Page() {
@@ -12,6 +13,7 @@ export default function Page() {
 
     return (
         <div>
+            <Navbar />
             <h1>Dashboard</h1>
             <p>Welcome, {user?.username}!</p>
             <LogoutButton className="btn-primary">Sign Out</LogoutButton>

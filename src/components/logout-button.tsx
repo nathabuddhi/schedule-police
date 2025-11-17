@@ -13,7 +13,7 @@ interface LogoutButtonProps {
 }
 
 export function LogoutButton({
-    className = "hover:cursor-crosshair",
+    className = "hover:cursor-pointer",
     redirectTo = "/login",
     children = "Logout",
     onLogoutSuccess,

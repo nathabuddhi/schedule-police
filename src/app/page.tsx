@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
+import Loading from "@/components/loading";
 
 export default function RootPage() {
     const { user, loading } = useAuth();
@@ -18,5 +19,5 @@ export default function RootPage() {
         }
     }, [user, loading, router]);
 
-    return null;
+    return <Loading />;
 }
