@@ -1,3 +1,5 @@
+"use client";
+
 import { ModeToggle } from "@/components/theme-toggle";
 
 export default function Loading() {
