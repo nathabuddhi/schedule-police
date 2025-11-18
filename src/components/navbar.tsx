@@ -1,3 +1,5 @@
+"use client";
+
 import { BinusLogoWithRibbon } from "@/components/binus-logo";
 import { TypingAnimation } from "@/components/ui/typing-animation";
 import { useAuthGuard } from "@/hooks/use-auth-guard";
