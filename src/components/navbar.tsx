@@ -2,6 +2,15 @@ import { BinusLogoWithRibbon } from "@/components/binus-logo";
 import { TypingAnimation } from "@/components/ui/typing-animation";
 import { useAuthGuard } from "@/hooks/use-auth-guard";
 import { LogoutButton } from "@/components/logout-button";
+import {
+    NavigationMenu,
+    NavigationMenuContent,
+    NavigationMenuItem,
+    NavigationMenuLink,
+    NavigationMenuList,
+    NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
+import { ModeToggle } from "./theme-toggle";
 
 export default function Navbar() {
     const { user, loading } = useAuthGuard({ requireAuth: true });
@@ -32,19 +41,37 @@ export default function Navbar() {
     return (
         <>
             <div className="flex flex-col">
-                <div className="mx-4 flex justify-between border-b-2 pb-2">
-                    <div className="w-full flex justify-between">
+                <div className="flex justify-between border-b-2 pb-2">
+                    <div className="mx-24 w-full flex justify-between">
                         <BinusLogoWithRibbon />
-                        <div className="flex items-center gap-4 text-sm font-medium text-foreground">
+                        <div className="flex items-center gap-4 text-xl font-medium text-foreground">
                             <p>
                                 <TypingAnimation words={words} loop />{" "}
                                 {user?.username}
                             </p>
                             <LogoutButton />
                         </div>
+                        <ModeToggle />
                     </div>
                 </div>
-                <div></div>
+                <div className="px-30 py-2 gap-10">
+                    <NavigationMenu>
+                        <NavigationMenuList>
+                            <NavigationMenuItem>
+                                <NavigationMenuTrigger>
+                                    Admin
+                                </NavigationMenuTrigger>
+                                <NavigationMenuContent className="p-2">
+                                    <NavigationMenuLink asChild>
+                                        {/* <Link href="/admin/assistants"> */}
+                                        Manage Assistants List
+                                        {/* </Link> */}
+                                    </NavigationMenuLink>
+                                </NavigationMenuContent>
+                            </NavigationMenuItem>
+                        </NavigationMenuList>
+                    </NavigationMenu>
+                </div>
             </div>
         </>
     );
