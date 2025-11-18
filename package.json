@@ -19,6 +19,7 @@
         "@radix-ui/react-slot": "^1.2.4",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
+        "crpyto": "^0.0.1-security",
         "dotenv": "^17.2.3",
         "js-cookie": "^3.0.5",
         "jsonwebtoken": "^9.0.2",
