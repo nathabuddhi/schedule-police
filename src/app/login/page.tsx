@@ -17,15 +17,19 @@ export default function LoginPage() {
     const { login } = useAuth();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [loggingIn, setLoggingIn] = useState(false);
 
     const { user, loading } = useAuthGuard({ requireAuth: false });
 
     const handleLogin = async (e: React.FormEvent) => {
+        if (loggingIn) return;
+        setLoggingIn(true);
         e.preventDefault();
 
         const loginResponse = await login(username, password);
         if (loginResponse.success) router.push("/home");
         else toast.error(loginResponse.message);
+        setLoggingIn(false);
     };
 
     if (loading) return <Loading />;
@@ -59,8 +63,9 @@ export default function LoginPage() {
                         />
                         <Button
                             className="w-full bg-[#0090d1] hover:bg-[#0070a3] hover:cursor-pointer"
+                            disabled={loggingIn}
                             type="submit">
-                            Login
+                            {loggingIn ? "Logging in..." : "Login"}
                         </Button>
                     </form>
                 </CardContent>
