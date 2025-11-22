@@ -1,5 +1,5 @@
 import { successResponse } from "@/lib/types";
-import { AUTH_COOKIE_NAME } from "@/api-controller/auth";
+import { AUTH_COOKIE_NAME } from "@/app/api/api-controller/auth/auth";
 
 export async function POST() {
     const response = successResponse("Logged out successfully", null);

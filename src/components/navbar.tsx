@@ -13,6 +13,7 @@ import {
     NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { ModeToggle } from "./theme-toggle";
+import Link from "next/link";
 
 export default function Navbar() {
     const { user, loading } = useAuthGuard({ requireAuth: true });
@@ -52,8 +53,8 @@ export default function Navbar() {
                                 {user?.username}
                             </p>
                             <LogoutButton />
+                            <ModeToggle />
                         </div>
-                        <ModeToggle />
                     </div>
                 </div>
                 <div className="px-30 py-2 gap-10">
@@ -63,11 +64,13 @@ export default function Navbar() {
                                 <NavigationMenuTrigger>
                                     Admin
                                 </NavigationMenuTrigger>
-                                <NavigationMenuContent className="p-2">
-                                    <NavigationMenuLink asChild>
-                                        {/* <Link href="/admin/assistants"> */}
-                                        Manage Assistants List
-                                        {/* </Link> */}
+                                <NavigationMenuContent className="px-4 py-2 w-[200px]">
+                                    <NavigationMenuLink
+                                        asChild
+                                        className="w-[200px]">
+                                        <Link href="/admin/assistants">
+                                            Manage Assistants List
+                                        </Link>
                                     </NavigationMenuLink>
                                 </NavigationMenuContent>
                             </NavigationMenuItem>

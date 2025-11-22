@@ -4,7 +4,7 @@ import {
     validateUser,
     AUTH_COOKIE_NAME,
     COOKIE_OPTIONS,
-} from "@/api-controller/auth";
+} from "@/app/api/api-controller/auth/auth";
 
 export async function POST(request: NextRequest) {
     try {

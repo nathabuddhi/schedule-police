@@ -8,7 +8,7 @@ export default function BinusLogo() {
             <Image
                 src="/logo-lcas.png"
                 alt="Logo"
-                loading="lazy"
+                loading="eager"
                 width={210}
                 height={100}
                 unoptimized
@@ -17,7 +17,7 @@ export default function BinusLogo() {
             <Image
                 src="/logo-lcas-dark.png"
                 alt="Logo"
-                loading="lazy"
+                loading="eager"
                 width={210}
                 height={100}
                 unoptimized

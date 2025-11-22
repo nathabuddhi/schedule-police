@@ -45,3 +45,34 @@ export function errorResponse(
         { status }
     );
 }
+
+export interface Shift {
+    ShiftId: string;
+    Start: string;
+    End: string;
+}
+
+export interface ShiftWithDate extends Shift {
+    startDate: Date;
+}
+
+export interface LecturerDetail {
+    AttendDate: string;
+    AttendPlace: string;
+    Status: string;
+    UserName: string;
+}
+
+export interface Lecturer {
+    First: LecturerDetail;
+    Next: LecturerDetail;
+}
+
+export interface Attendance {
+    CampusName: string;
+    ClassName: string;
+    CourseName: string;
+    GSLC: boolean;
+    Lecturers: Lecturer[];
+    Room: string;
+}

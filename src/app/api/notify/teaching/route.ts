@@ -1,6 +1,5 @@
-import { NextResponse } from "next/server";
+import { checkTeachingSchedule } from "@/app/api/api-controller/notify/teaching";
 
 export async function POST() {
-    // return NextResponse.json(await notifyTeachingSchedule());
-    return NextResponse.json({ success: true, message: "Notification sent." });
+    return await checkTeachingSchedule();
 }
