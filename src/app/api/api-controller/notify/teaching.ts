@@ -5,7 +5,7 @@ import {
     ShiftWithDate,
     successResponse,
 } from "@/lib/types";
-// import { lineMessagingApiClient } from "@/lib/line";
+import { lineMessagingApiClient } from "@/lib/line";
 import { sql } from "@/lib/neon";
 import { sendGroupMessage } from "../line/send";
 
@@ -135,15 +135,15 @@ export async function checkTeachingSchedule() {
     } catch (error) {
         console.error("Error in checking teaching schedule:", error);
 
-        // lineMessagingApiClient.pushMessage({
-        //     to: process.env.LINE_RMOSUBCO_GROUP_ID!,
-        //     messages: [
-        //         {
-        //             type: "text",
-        //             text: `Dear RMO & Subco, \n\nAn error occured while checking attendance data.\n\nPlease check attendance transaction immediately.\n\nThank you.`,
-        //         },
-        //     ],
-        // });
+        lineMessagingApiClient.pushMessage({
+            to: process.env.LINE_RMOSUBCO_GROUP_ID!,
+            messages: [
+                {
+                    type: "text",
+                    text: `Dear RMO & Subco, \n\nAn error occured while checking attendance data.\n\nPlease check attendance transaction immediately.\n\nThank you.`,
+                },
+            ],
+        });
 
         return errorResponse("An internal error occured: " + error, 500);
     }
