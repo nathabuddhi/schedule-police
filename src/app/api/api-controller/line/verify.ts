@@ -1,4 +1,5 @@
 import { StandardResponse } from "@/lib/types";
+
 import crypto from "crypto";
 
 export function verifyLineSignature(
@@ -6,16 +7,12 @@ export function verifyLineSignature(
     signature: string
 ): StandardResponse<boolean> {
     try {
-        const secret = process.env.LINE_CHANNEL_SECRET;
-        if (!secret || secret === "")
-            throw new Error("LINE_CHANNEL_SECRET is not defined");
+        const secret = process.env.LINE_CHANNEL_SECRET!;
 
         const hmac = crypto
             .createHmac("sha256", secret)
             .update(payload, "utf8")
             .digest("base64");
-        console.log("Computed HMAC:", hmac);
-        console.log("Received Signature:", signature);
         return {
             success: true,
             message: "Signature verification completed.",

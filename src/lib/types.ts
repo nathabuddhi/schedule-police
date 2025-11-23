@@ -76,3 +76,9 @@ export interface Attendance {
     Lecturers: Lecturer[];
     Room: string;
 }
+
+export interface NotifyTeachingMessage {
+    userId: string;
+    text: string;
+    mention: boolean;
+}
