@@ -10,5 +10,8 @@ export async function POST(request: NextRequest) {
     if (!valid.success || !valid.data) {
         return errorResponse("Invalid signature", 401);
     }
-    return successResponse("Message received", null);
+
+    console.log("Valid LINE webhook received:", body);
+
+    return successResponse("Message received.", null);
 }
