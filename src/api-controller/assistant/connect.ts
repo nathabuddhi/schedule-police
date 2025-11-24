@@ -53,6 +53,10 @@ export async function HandleConnectRequest(
             );
             return;
         }
+        
         const userInitial = row.initial;
-    } catch (error) {}
+        await sql`UPDATE assistants SET line_user_id = ${webhook_payload.source.userId} WHERE initial = ${userInitial}`;
+    } catch (error) {
+        console.error("Error in HandleConnectRequest:", error);
+    }
 }
