@@ -1,27 +1,64 @@
-import { lineMessagingApiClient, Message } from "@/lib/line";
+import {
+    lineMessagingApiClient,
+    MentionSubstitutionObject,
+    Message,
+    TextMessageV2,
+} from "@/lib/line";
 import { NotifyTeachingMessage, StandardResponse } from "@/lib/types";
 
 export async function sendGroupMessage(
     messages: NotifyTeachingMessage[]
 ): Promise<StandardResponse<void>> {
     try {
-        const sendMessageResponse = await fetch(
-            "https://line-schedule-police.nathabuddhi.com/send-notification-message",
-            {
-                method: "POST",
-                headers: {
-                    "X-Auth-Token": `${process.env.X_AUTH_TOKEN}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ messages: messages }),
-            }
-        );
+        const prefixText =
+            "Dear all mentioned assistants, this is a reminder to re-login onto messier and scan BinusMaya Attendance QR Code.\n\n";
 
-        if (!sendMessageResponse.ok) {
-            throw new Error(
-                `Failed to send group message. Status: ${sendMessageResponse.status}`
-            );
-        }
+        const suffixText = "\n\nThank you.";
+
+        const textTemplateParts: string[] = [];
+        const substitutionObjects: Record<string, MentionSubstitutionObject> =
+            {};
+
+        messages.forEach((msg, index) => {
+            const idx = index + 1;
+            const userId = msg.userId;
+            const text = msg.text ?? "";
+            const mention = msg.mention;
+
+            if (!userId) return;
+
+            if (mention) {
+                const placeholder = `user${idx}`;
+
+                textTemplateParts.push(`${idx}. {${placeholder}} - ${text}`);
+
+                substitutionObjects[placeholder] = {
+                    type: "mention",
+                    mentionee: {
+                        type: "user",
+                        userId,
+                    },
+                };
+            } else {
+                textTemplateParts.push(`${idx}. @${userId} - ${text}`);
+            }
+        });
+
+        const fullText = prefixText + textTemplateParts.join("\n") + suffixText;
+
+        const lineMessage: TextMessageV2 = {
+            type: "textV2",
+            text: fullText,
+            substitution:
+                Object.keys(substitutionObjects).length > 0
+                    ? substitutionObjects
+                    : undefined,
+        };
+
+        lineMessagingApiClient.pushMessage({
+            to: process.env.LINE_LCAS_GROUP_ID!,
+            messages: [lineMessage],
+        });
 
         return {
             success: true,

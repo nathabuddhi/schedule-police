@@ -10,3 +10,5 @@ export type PushMessageRequest = messagingApi.PushMessageRequest;
 export type ReplyMessageRequest = messagingApi.ReplyMessageRequest;
 export type TextMessageV2 = messagingApi.TextMessageV2;
 export type Message = messagingApi.Message;
+export type SubstitutionObject = messagingApi.SubstitutionObject;
+export type MentionSubstitutionObject = messagingApi.MentionSubstitutionObject;
