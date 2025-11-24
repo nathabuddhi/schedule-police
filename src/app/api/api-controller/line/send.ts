@@ -9,8 +9,7 @@ export async function sendGroupMessage(
             {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `${process.env.X_AUTH_TOKEN}`,
+                    "X-Auth-Token": `${process.env.X_AUTH_TOKEN}`,
                 },
                 body: JSON.stringify({ messages: messages }),
             }

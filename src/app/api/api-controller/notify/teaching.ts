@@ -124,7 +124,7 @@ export async function checkTeachingSchedule() {
 
                 return {
                     text: `${lect.CourseName} - ${lect.ClassName} - ${lect.Room}`,
-                    userId: userId,
+                    userId: userId ? userId : lect.UserName,
                     mention: userId ? true : false,
                 };
             })
