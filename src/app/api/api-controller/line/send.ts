@@ -10,6 +10,7 @@ export async function sendGroupMessage(
                 method: "POST",
                 headers: {
                     "X-Auth-Token": `${process.env.X_AUTH_TOKEN}`,
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ messages: messages }),
             }
