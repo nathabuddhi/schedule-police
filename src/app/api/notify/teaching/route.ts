@@ -1,4 +1,4 @@
-import { checkTeachingSchedule } from "@/app/api/api-controller/notify/teaching";
+import { checkTeachingSchedule } from "@/api-controller/notify/teaching";
 import { errorResponse } from "@/lib/types";
 import { NextRequest } from "next/server";
 

@@ -60,20 +60,22 @@ export default function Navbar() {
                 <div className="px-30 py-2 gap-10">
                     <NavigationMenu>
                         <NavigationMenuList>
-                            <NavigationMenuItem>
-                                <NavigationMenuTrigger>
-                                    Admin
-                                </NavigationMenuTrigger>
-                                <NavigationMenuContent className="px-4 py-2 w-[200px]">
-                                    <NavigationMenuLink
-                                        asChild
-                                        className="w-[200px]">
-                                        <Link href="/admin/assistants">
-                                            Manage Assistants List
-                                        </Link>
-                                    </NavigationMenuLink>
-                                </NavigationMenuContent>
-                            </NavigationMenuItem>
+                            {user?.role === "ADMIN" && (
+                                <NavigationMenuItem>
+                                    <NavigationMenuTrigger>
+                                        Admin
+                                    </NavigationMenuTrigger>
+                                    <NavigationMenuContent className="px-4 py-2 w-[200px]">
+                                        <NavigationMenuLink
+                                            asChild
+                                            className="w-[200px]">
+                                            <Link href="/admin/assistants">
+                                                Manage Assistants List
+                                            </Link>
+                                        </NavigationMenuLink>
+                                    </NavigationMenuContent>
+                                </NavigationMenuItem>
+                            )}
                         </NavigationMenuList>
                     </NavigationMenu>
                 </div>

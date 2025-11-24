@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { successResponse, errorResponse, User } from "@/lib/types";
-import { verifyToken } from "@/app/api/api-controller/auth/jwt";
-import { AUTH_COOKIE_NAME } from "@/app/api/api-controller/auth/auth";
+import { verifyToken } from "@/api-controller/auth/jwt";
+import { AUTH_COOKIE_NAME } from "@/api-controller/auth/auth";
 
 export async function GET(request: NextRequest) {
     try {

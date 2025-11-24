@@ -1,4 +1,4 @@
-import { generateToken } from "@/app/api/api-controller/auth/jwt";
+import { generateToken } from "@/api-controller/auth/jwt";
 import { sql } from "@/lib/neon";
 import { LoginResponse, StandardResponse, User } from "@/lib/types";
 

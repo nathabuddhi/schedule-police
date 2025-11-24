@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/types";
-import { verifyLineSignature } from "@/app/api/api-controller/line/verify";
+import { verifyLineSignature } from "@/api-controller/line/verify";
 
 export async function POST(request: NextRequest) {
     const body = await request.text();
