@@ -55,7 +55,7 @@ export async function HandleConnectRequest(
         }
 
         const userInitial = row.initial;
-        await sql`UPDATE assistants SET line_user_id = ${webhook_payload.source.userId} WHERE initial = ${userInitial}`;
+        await sql`UPDATE assistants SET line_id = ${webhook_payload.source.userId} WHERE initial = ${userInitial}`;
         await sql`DELETE FROM assistant_connect WHERE initial = ${userInitial}`;
 
         replyMessage(
