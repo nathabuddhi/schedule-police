@@ -1,3 +1,4 @@
+import { lineMessagingApiClient, Message } from "@/lib/line";
 import { NotifyTeachingMessage, StandardResponse } from "@/lib/types";
 
 export async function sendGroupMessage(
@@ -34,4 +35,16 @@ export async function sendGroupMessage(
             message: "An error occurred while sending the group message.",
         };
     }
+}
+
+export function replyMessage(replyToken: string, message: string) {
+    lineMessagingApiClient.replyMessage({
+        replyToken: replyToken,
+        messages: [
+            {
+                type: "text",
+                text: message,
+            } as Message,
+        ],
+    });
 }

@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/types";
 import { verifyLineSignature } from "@/api-controller/line/verify";
+import { HandleConnectRequest } from "@/api-controller/assistant/connect";
 
 export async function POST(request: NextRequest) {
     const body = await request.text();
@@ -11,7 +12,28 @@ export async function POST(request: NextRequest) {
         return errorResponse("Invalid signature", 401);
     }
 
-    console.log("Valid LINE webhook received:", body);
+    const rawPayload = JSON.parse(body);
+
+    const payloadToProcess = rawPayload.events[0];
+
+    if (!payloadToProcess) {
+        return successResponse("Message received.", null);
+    }
+
+    switch (payloadToProcess.type) {
+        case "message":
+            if (payloadToProcess.message.text.startsWith("CONNECT_LINE_ID-")) {
+                await HandleConnectRequest(payloadToProcess);
+                break;
+            } else {
+                console.log("Received message:", payloadToProcess.message.text);
+                break;
+            }
+
+        default:
+            console.log("Unhandled event type:", payloadToProcess);
+            break;
+    }
 
     return successResponse("Message received.", null);
 }

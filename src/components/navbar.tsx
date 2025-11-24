@@ -12,8 +12,9 @@ import {
     NavigationMenuList,
     NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import { ModeToggle } from "./theme-toggle";
+import { ModeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
+import LinkAccountDialog from "@/components/link-account-dialog";
 
 export default function Navbar() {
     const { user, loading } = useAuthGuard({ requireAuth: true });
@@ -60,6 +61,9 @@ export default function Navbar() {
                 <div className="px-30 py-2 gap-10">
                     <NavigationMenu>
                         <NavigationMenuList>
+                            <NavigationMenuItem>
+                                <LinkAccountDialog />
+                            </NavigationMenuItem>
                             {user?.role === "ADMIN" && (
                                 <NavigationMenuItem>
                                     <NavigationMenuTrigger>
