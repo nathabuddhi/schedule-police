@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
                 await HandleConnectRequest(payloadToProcess);
                 break;
             } else {
-                console.log("Received message:", payloadToProcess.message.text);
+                console.log("Received message:", payloadToProcess);
                 break;
             }
 
