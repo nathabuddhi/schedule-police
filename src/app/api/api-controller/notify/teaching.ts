@@ -56,6 +56,7 @@ async function getAttendanceData(): Promise<Attendance[]> {
         console.log("No upcoming shifts found.");
         return [];
     }
+    console.log(`Closest shift ID: ${closestShiftId}`);
 
     const attendance = await fetch(
         `https://bluejack.binus.ac.id/lapi/api/Lecturer/GetLecturerAttendanceByLaboratoryId?transactionDate=${transactionDate}&shiftId=${closestShiftId}&labId=f5bbcbf8-7faa-df11-bca3-d8d385fce79c`,
@@ -68,6 +69,7 @@ async function getAttendanceData(): Promise<Attendance[]> {
     );
 
     const attendanceRawData = await attendance.json();
+    console.log(JSON.stringify(attendanceRawData));
     return attendanceRawData.RoomAttendance ?? [];
 }
 
@@ -104,6 +106,10 @@ export async function checkTeachingSchedule() {
                 });
             });
 
+        console.log(
+            `Non-present lecturers: ${JSON.stringify(nonPresentLecturers)}`
+        );
+
         if (nonPresentLecturers.length === 0) {
             console.log("All lecturers are present.");
             return successResponse("All lecturers are present.");
@@ -123,6 +129,7 @@ export async function checkTeachingSchedule() {
                 };
             })
         );
+        console.log(`Messages to be sent: ${JSON.stringify(messages)}`);
 
         const sendMessageResponse = await sendGroupMessage(messages);
 
