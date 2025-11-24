@@ -43,7 +43,7 @@ export async function HandleConnectRequest(
         const row = result[0];
 
         if (
-            new Date(`${row.created_at}Z`) <
+            new Date(`${row.created_at}Z`) >
             new Date(Date.now() + 15 * 60 * 1000)
         ) {
             console.log("Connection string has expired.");
@@ -53,9 +53,16 @@ export async function HandleConnectRequest(
             );
             return;
         }
-        
+
         const userInitial = row.initial;
         await sql`UPDATE assistants SET line_user_id = ${webhook_payload.source.userId} WHERE initial = ${userInitial}`;
+        await sql`DELETE FROM assistant_connect WHERE initial = ${userInitial}`;
+
+        replyMessage(
+            replyToken,
+            "Your Line account has been successfully linked!"
+        );
+        return;
     } catch (error) {
         console.error("Error in HandleConnectRequest:", error);
     }
