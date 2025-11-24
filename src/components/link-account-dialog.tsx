@@ -16,6 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import Link from "next/link";
 import { ReactNode } from "react";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function LinkAccountDialog() {
     return (
@@ -117,10 +118,15 @@ export function LinkAccount() {
         null
     );
     const [isFetched, setIsFetched] = useState(false);
+    const { user } = useAuth();
 
     useEffect(() => {
         async function fetchConnectionString() {
             try {
+                if (user?.line_id)
+                    toast.info(
+                        "You have already linked your Line account. Contact ResMan if you want to re-link."
+                    );
                 setIsFetched(true);
                 const response = await GetConnectionString();
 
@@ -136,7 +142,7 @@ export function LinkAccount() {
             }
         }
         if (!isFetched) fetchConnectionString();
-    }, [isFetched]);
+    }, [isFetched, user?.line_id]);
 
     return (
         <>

@@ -47,10 +47,10 @@ export async function HandleConnectRequest(
             new Date(Date.now() + 15 * 60 * 1000)
         ) {
             console.log("Connection string has expired.");
-            replyMessage(
-                replyToken,
-                "The connection string has expired. Please generate a new one from https://schedule-police.nathabuddhi.com"
-            );
+            // replyMessage(
+            //     replyToken,
+            //     "The connection string has expired. Please generate a new one from https://schedule-police.nathabuddhi.com"
+            // );
             return;
         }
 
