@@ -32,6 +32,13 @@ export async function HandleConnectRequest(
     const replyToken = webhook_payload.replyToken;
 
     try {
+        const checkResult =
+            await sql`SELECT line_id FROM assistants WHERE line_id = ${webhook_payload.source.userId}`;
+
+        if (checkResult.length > 0) {
+            return;
+        }
+
         const result =
             await sql`SELECT initial, created_at FROM assistant_connect WHERE connection_string = ${connectionString}`;
 
