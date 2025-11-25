@@ -44,29 +44,29 @@ export function BinusLogoWithRibbon() {
 }
 
 export function Chikawa() {
-  return (
-    <div className="absolute top-0 left-0">
-      <div className=" relative group w-[200px] h-[150px]">
-        <Image
-          src="/chikawa.png"
-          alt="chikawa"
-          loading="lazy"
-          width={150}
-          height={150}
-          unoptimized
-        />
+    return (
+        <div className="absolute top-0 left-0">
+            <div className=" relative group w-[200px] h-[150px]">
+                <Image
+                    src="/chiikawa.png"
+                    alt="chikawa"
+                    loading="lazy"
+                    width={150}
+                    height={150}
+                    unoptimized
+                />
 
-        <div className="absolute inset-0 flex flex-col justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-          <div className="text-white text-xs font-bold bg-black/50 p-1 rounded mt-2">
-            SC24-2
-          </div>
+                <div className="absolute inset-0 flex flex-col justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                    <div className="text-white text-xs font-bold bg-black/50 p-1 rounded mt-2">
+                        SC24-2
+                    </div>
 
-          <div className="grow"></div>
-          <div className="text-white text-xs font-bold bg-black/50 p-1 rounded mb-2">
-            NB24-2
-          </div>
+                    <div className="grow"></div>
+                    <div className="text-white text-xs font-bold bg-black/50 p-1 rounded mb-2">
+                        NB24-2
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 }

@@ -37,49 +37,47 @@ export default function LoginPage() {
     else if (user) return null;
 
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="absolute inset-0 z-0">
-          <AnoAI />
-        </div>
-        <Chikawa />
-        <Card className="w-full max-w-sm shadow-lg pt-0 z-1">
-          <CardHeader className="text-center">
-            <div className="pl-5">
-              <BinusLogoWithRibbon />
+        <div className="flex min-h-screen items-center justify-center">
+            <div className="absolute inset-0 z-0">
+                <AnoAI />
             </div>
-            <CardTitle className="mt-2 text-lg font-semibold text-card-foreground">
-              LCAS - SChedule Police
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-3">
-              <Input
-                placeholder="Initial"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <Button
-                className="w-full bg-[#0090d1] hover:bg-[#0070a3] hover:cursor-pointer"
-                disabled={loggingIn}
-                type="submit"
-              >
-                {loggingIn ? "Logging in..." : "Login"}
-              </Button>
-            </form>
-          </CardContent>
-          
-        </Card>
-        <div className="absolute bottom-4 right-4">
-          <ModeToggle />
+            <Chikawa />
+            <Card className="w-full max-w-sm shadow-lg pt-0 z-1">
+                <CardHeader className="text-center">
+                    <div className="pl-5">
+                        <BinusLogoWithRibbon />
+                    </div>
+                    <CardTitle className="mt-2 text-lg font-semibold text-card-foreground">
+                        LCAS - SChedule Police
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleLogin} className="space-y-3">
+                        <Input
+                            placeholder="Initial"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                        />
+                        <Input
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                        <Button
+                            className="w-full bg-[#0090d1] hover:bg-[#0070a3] hover:cursor-pointer"
+                            disabled={loggingIn}
+                            type="submit">
+                            {loggingIn ? "Logging in..." : "Login"}
+                        </Button>
+                    </form>
+                </CardContent>
+            </Card>
+            <div className="absolute bottom-4 right-4">
+                <ModeToggle />
+            </div>
         </div>
-      </div>
     );
 }
