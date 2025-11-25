@@ -10,7 +10,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/auth-context";
 import { useAuthGuard } from "@/hooks/use-auth-guard";
 import Loading from "@/components/loading";
-import { BinusLogoWithRibbon } from "@/components/binus-logo";
+import { BinusLogoWithRibbon, Chikawa } from "@/components/binus-logo";
+import AnoAI from "@/components/ui/animated-shader-background";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -36,43 +37,49 @@ export default function LoginPage() {
     else if (user) return null;
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-background">
-            <Card className="w-full max-w-sm shadow-lg pt-0">
-                <CardHeader className="text-center">
-                    <div className="pl-5">
-                        <BinusLogoWithRibbon />
-                    </div>
-                    <CardTitle className="mt-2 text-lg font-semibold text-card-foreground">
-                        LCAS - SChedule Police
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleLogin} className="space-y-3">
-                        <Input
-                            placeholder="Initial"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-                        <Input
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                        <Button
-                            className="w-full bg-[#0090d1] hover:bg-[#0070a3] hover:cursor-pointer"
-                            disabled={loggingIn}
-                            type="submit">
-                            {loggingIn ? "Logging in..." : "Login"}
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
-            <div className="absolute bottom-4 right-4">
-                <ModeToggle />
-            </div>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="absolute inset-0 z-0">
+          <AnoAI />
         </div>
+        <Chikawa />
+        <Card className="w-full max-w-sm shadow-lg pt-0 z-1">
+          <CardHeader className="text-center">
+            <div className="pl-5">
+              <BinusLogoWithRibbon />
+            </div>
+            <CardTitle className="mt-2 text-lg font-semibold text-card-foreground">
+              LCAS - SChedule Police
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-3">
+              <Input
+                placeholder="Initial"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+              <Input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <Button
+                className="w-full bg-[#0090d1] hover:bg-[#0070a3] hover:cursor-pointer"
+                disabled={loggingIn}
+                type="submit"
+              >
+                {loggingIn ? "Logging in..." : "Login"}
+              </Button>
+            </form>
+          </CardContent>
+          
+        </Card>
+        <div className="absolute bottom-4 right-4">
+          <ModeToggle />
+        </div>
+      </div>
     );
 }
