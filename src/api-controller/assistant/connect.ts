@@ -5,6 +5,21 @@ import { replyMessage } from "../line/send";
 
 export async function GetConnectionString(username: string) {
     try {
+        const existing =
+            await sql`SELECT connection_string, created_at FROM assistant_connect WHERE initial = ${username}`;
+        if (existing.length > 0) {
+            const row = existing[0];
+            if (
+                new Date(`${row.created_at}Z`) >
+                new Date(Date.now() - 15 * 60 * 1000)
+            ) {
+                return successResponse(
+                    "Connection String obtained successfully!",
+                    row.connection_string
+                );
+            }
+        }
+
         const randomKey = Math.random()
             .toString(36)
             .substring(2, 2 + 64);

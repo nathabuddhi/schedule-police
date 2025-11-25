@@ -169,7 +169,10 @@ export function LinkAccount() {
                             commandMap={{
                                 "": connectionString ?? "Loading...",
                             }}
-                            disabled={!connectionString}
+                            disabled={
+                                !connectionString ||
+                                connectionString === "ALREADY_CONNECTED"
+                            }
                         />
                     </div>
                 }
