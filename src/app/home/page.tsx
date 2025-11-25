@@ -13,8 +13,14 @@ export default function Page() {
     return (
         <div>
             <Navbar />
-            <div className="w-full h-full flex justify-center items-center">
-                
+            <div className="w-full h-full flex flex-col justify-center items-center p-4 text-center">
+                <h1 className="text-xl">
+                    Well unfortunately, there&apos;s nothing here yet...
+                </h1>
+                <p>
+                    But perhaps, in the meantime, go ahead and connect your line
+                    account in the navbar!
+                </p>
             </div>
         </div>
     );

@@ -63,7 +63,7 @@ export function ScriptCopyBtn({
         <div className={cn("w-full flex justify-center", className)}>
             <div className="w-full flex justify-between">
                 <div className="w-full flex justify-between">
-                    <div className="min-w-[300px] grow font-mono">
+                    <div className="min-w-[200px] grow font-mono">
                         {highlightedCode ? (
                             <div
                                 className={`[&>pre]:overflow-x-auto [&>pre]:rounded-md [&>pre]:p-2 [&>pre]:px-4 [&>pre]:font-mono ${

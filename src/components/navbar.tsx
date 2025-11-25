@@ -1,7 +1,6 @@
 "use client";
 
 import { BinusLogoWithRibbon } from "@/components/binus-logo";
-import { TypingAnimation } from "@/components/ui/typing-animation";
 import { useAuthGuard } from "@/hooks/use-auth-guard";
 import { LogoutButton } from "@/components/logout-button";
 import {
@@ -15,6 +14,16 @@ import {
 import { ModeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
 import LinkAccountDialog from "@/components/link-account-dialog";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet";
+import { TypingAnimation } from "@/components/ui/typing-animation";
 
 export default function Navbar() {
     const { user, loading } = useAuthGuard({ requireAuth: true });
@@ -44,7 +53,7 @@ export default function Navbar() {
     if (loading || !user) return null;
     return (
         <>
-            <div className="flex flex-col">
+            <div className="hidden md:flex flex-col">
                 <div className="flex justify-between border-b-2 pb-2">
                     <div className="mx-24 w-full flex justify-between">
                         <BinusLogoWithRibbon />
@@ -82,6 +91,52 @@ export default function Navbar() {
                             )}
                         </NavigationMenuList>
                     </NavigationMenu>
+                </div>
+            </div>
+
+            <div className="flex md:hidden flex-col border-b-2">
+                <div className="flex justify-between items-center p-4">
+                    <BinusLogoWithRibbon />
+                    <div className="flex items-center gap-2">
+                        <ModeToggle />
+                        <Sheet>
+                            <SheetTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <Menu className="h-6 w-6" />
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent
+                                side="right"
+                                className="w-[280px] flex flex-col">
+                                <SheetHeader>
+                                    <SheetTitle className="text-left">
+                                        Hello, {user?.username}
+                                    </SheetTitle>
+                                </SheetHeader>
+                                <div className="flex flex-col gap-2 mt-6 flex-1">
+                                    <LinkAccountDialog />
+                                    {user?.role === "ADMIN" && (
+                                        <>
+                                            <p className="text-sm font-semibold text-muted-foreground px-2 mt-2">
+                                                Admin
+                                            </p>
+                                            <Button
+                                                variant="ghost"
+                                                className="justify-start pl-6"
+                                                asChild>
+                                                <Link href="/admin/assistants">
+                                                    Manage Assistants List
+                                                </Link>
+                                            </Button>
+                                        </>
+                                    )}
+                                </div>
+                                <div className="mt-auto pb-4">
+                                    <LogoutButton />
+                                </div>
+                            </SheetContent>
+                        </Sheet>
+                    </div>
                 </div>
             </div>
         </>
