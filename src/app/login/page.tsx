@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { useAuthGuard } from "@/hooks/use-auth-guard";
 import Loading from "@/components/loading";
 import { BinusLogoWithRibbon, Chikawa } from "@/components/binus-logo";
-import AnoAI from "@/components/ui/animated-shader-background";
+// import AnoAI from "@/components/ui/animated-shader-background";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -38,9 +38,9 @@ export default function LoginPage() {
 
     return (
         <div className="flex min-h-screen items-center justify-center">
-            <div className="absolute inset-0 z-0">
+            {/* <div className="absolute inset-0 z-0">
                 <AnoAI />
-            </div>
+            </div> */}
             <Chikawa />
             <Card className="w-full max-w-sm shadow-lg pt-0 z-1">
                 <CardHeader className="text-center">
