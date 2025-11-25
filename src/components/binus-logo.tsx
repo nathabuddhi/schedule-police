@@ -11,7 +11,6 @@ export default function BinusLogo() {
                 loading="eager"
                 width={210}
                 height={100}
-                unoptimized
                 className="pt-2 dark:hidden"
             />
             <Image
@@ -20,7 +19,6 @@ export default function BinusLogo() {
                 loading="eager"
                 width={210}
                 height={100}
-                unoptimized
                 className="pt-2 hidden dark:block"
             />
         </>
@@ -36,7 +34,6 @@ export function BinusLogoWithRibbon() {
                 loading="lazy"
                 width={35}
                 height={30}
-                unoptimized
             />
             <BinusLogo />
         </div>
