@@ -132,21 +132,24 @@ export async function checkTeachingSchedule(): Promise<StandardResponse<void>> {
             getNonPresentLecturersByRegion(attendanceData);
 
         for (const row of activeRegionKeys) {
+            console.log(`Processing region: ${row.region}`);
             if (nonPresentLecturersByRegion[row.region]?.length === 0) {
                 console.log(`All ${row.region} lecturers are present.`);
                 continue;
             }
-            const groupId =
+            const groupIdReq =
                 await sql`SELECT * FROM active_regions WHERE region = ${row.region} `;
 
-            if (groupId.length === 0) {
+            if (groupIdReq.length === 0) {
                 console.error(`No group ID found for region: ${row.region}`);
                 continue;
             }
 
+            const groupId = groupIdReq[0];
+
             const nonPresentLecturers =
                 nonPresentLecturersByRegion[row.region] ?? [];
-
+            console.log("Non Present Lecturers: ", nonPresentLecturers);
             const messages = await Promise.all(
                 nonPresentLecturers.map(async (lect) => {
                     const userId =
@@ -162,16 +165,18 @@ export async function checkTeachingSchedule(): Promise<StandardResponse<void>> {
                 })
             );
 
+            console.log(`messages ${row.region}`, messages, groupId);
+
             const sendMessageResponse = await sendTeachingReminderToGroup(
                 messages,
-                groupId[0].remind_group_line_id
+                groupId.remind_group_line_id
             );
             if (!sendMessageResponse.success) {
                 console.error(
                     `Failed to send notification message: ${sendMessageResponse.message}`
                 );
                 lineMessagingApiClient.pushMessage({
-                    to: groupId[0].op_group_line_id,
+                    to: groupId.op_group_line_id,
                     messages: [
                         {
                             type: "text",
