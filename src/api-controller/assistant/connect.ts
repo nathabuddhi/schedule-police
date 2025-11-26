@@ -41,8 +41,6 @@ export async function GetConnectionString(username: string) {
 export async function HandleConnectRequest(
     webhook_payload: LineWebhookMessagePayload
 ) {
-    console.log("HandleConnectRequest called with payload:", webhook_payload);
-
     const connectionString = webhook_payload.message.text;
     const replyToken = webhook_payload.replyToken;
 
@@ -51,6 +49,10 @@ export async function HandleConnectRequest(
             await sql`SELECT line_id FROM assistants WHERE line_id = ${webhook_payload.source.userId}`;
 
         if (checkResult.length > 0) {
+            replyMessage(
+                replyToken,
+                "This Line account is already linked to an assistant account."
+            );
             return;
         }
 
@@ -58,7 +60,10 @@ export async function HandleConnectRequest(
             await sql`SELECT initial, created_at FROM assistant_connect WHERE connection_string = ${connectionString}`;
 
         if (result.length === 0) {
-            console.log("No matching connection string found.");
+            replyMessage(
+                replyToken,
+                "Invalid connection string. Please ensure you have entered it correctly."
+            );
             return;
         }
 
@@ -69,10 +74,10 @@ export async function HandleConnectRequest(
             new Date(Date.now() + 15 * 60 * 1000)
         ) {
             console.log("Connection string has expired.");
-            // replyMessage(
-            //     replyToken,
-            //     "The connection string has expired. Please generate a new one from https://schedule-police.nathabuddhi.com"
-            // );
+            replyMessage(
+                replyToken,
+                "The connection string has expired. Please generate a new one from https://schedule-police.nathabuddhi.com"
+            );
             return;
         }
 
