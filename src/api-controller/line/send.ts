@@ -56,10 +56,14 @@ export async function sendTeachingReminderToGroup(
                     : undefined,
         };
 
-        lineMessagingApiClient.pushMessage({
+        console.log("Prepared message: ", lineMessage);
+
+        const sendMessageResponse = await lineMessagingApiClient.pushMessage({
             to: groupLineId,
             messages: [lineMessage],
         });
+
+        console.log("Sent message: ", sendMessageResponse);
 
         return {
             success: true,
