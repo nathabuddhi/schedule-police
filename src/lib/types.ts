@@ -77,8 +77,17 @@ export interface Attendance {
     Room: string;
 }
 
+export interface NonPresentLecturer {
+    UserName: string;
+    CourseName: string;
+    ClassName: string;
+    Room: string;
+}
+
 export interface NotifyTeachingMessage {
     userId: string;
     text: string;
     mention: boolean;
 }
+
+export type RegionMap = Record<string, NonPresentLecturer[]>;

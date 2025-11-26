@@ -6,8 +6,9 @@ import {
 } from "@/lib/line";
 import { NotifyTeachingMessage, StandardResponse } from "@/lib/types";
 
-export async function sendGroupMessage(
-    messages: NotifyTeachingMessage[]
+export async function sendTeachingReminderToGroup(
+    messages: NotifyTeachingMessage[],
+    groupLineId: string
 ): Promise<StandardResponse<void>> {
     try {
         const prefixText =
@@ -55,8 +56,8 @@ export async function sendGroupMessage(
                     : undefined,
         };
 
-        lineMessagingApiClient.pushMessage({
-            to: process.env.LINE_LCAS_GROUP_ID!,
+        await lineMessagingApiClient.pushMessage({
+            to: groupLineId,
             messages: [lineMessage],
         });
 
