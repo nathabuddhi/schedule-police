@@ -132,7 +132,6 @@ export async function checkTeachingSchedule(): Promise<StandardResponse<void>> {
             getNonPresentLecturersByRegion(attendanceData);
 
         for (const row of activeRegionKeys) {
-            console.log(`Processing region: ${row.region}`);
             if (nonPresentLecturersByRegion[row.region]?.length === 0) {
                 console.log(`All ${row.region} lecturers are present.`);
                 continue;
@@ -149,7 +148,7 @@ export async function checkTeachingSchedule(): Promise<StandardResponse<void>> {
 
             const nonPresentLecturers =
                 nonPresentLecturersByRegion[row.region] ?? [];
-            console.log("Non Present Lecturers: ", nonPresentLecturers);
+
             const messages = await Promise.all(
                 nonPresentLecturers.map(async (lect) => {
                     const userId =
@@ -164,8 +163,6 @@ export async function checkTeachingSchedule(): Promise<StandardResponse<void>> {
                     };
                 })
             );
-
-            console.log(`messages ${row.region}`, messages, groupId);
 
             const sendMessageResponse = await sendTeachingReminderToGroup(
                 messages,
