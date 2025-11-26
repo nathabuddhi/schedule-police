@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/types";
 import { verifyLineSignature } from "@/api-controller/line/verify";
 import { HandleConnectRequest } from "@/api-controller/assistant/connect";
+import { checkTeachingSchedule } from "@/api-controller/notify/teaching";
+import { sql } from "@/lib/neon";
 
 export async function POST(request: NextRequest) {
     const body = await request.text();
@@ -26,9 +28,17 @@ export async function POST(request: NextRequest) {
                 await HandleConnectRequest(payloadToProcess);
                 break;
             } else if (
-                payloadToProcess.message.text.startsWith("LATE_PERMISSION-")
+                payloadToProcess.message.text.startsWith("notify_messier")
             ) {
-                // handle stuff
+                const check =
+                    await sql`SELECT role FROM assistants WHERE line_id = ${payloadToProcess.source.userId}`;
+
+                if (check.length === 0 && check[0].role === "ADMIN")
+                    await checkTeachingSchedule(
+                        "reply",
+                        payloadToProcess.replyToken,
+                        payloadToProcess.source.groupId ?? ""
+                    );
                 break;
             } else {
                 console.log("Received message:", payloadToProcess);

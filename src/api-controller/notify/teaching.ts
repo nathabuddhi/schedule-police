@@ -111,7 +111,99 @@ function getNonPresentLecturersByRegion(
         }, {});
 }
 
-export async function checkTeachingSchedule(): Promise<StandardResponse<void>> {
+async function getNotificationMessages(
+    nonPresentLecturers: NonPresentLecturer[]
+) {
+    const messages = await Promise.all(
+        nonPresentLecturers.map(async (lect) => {
+            const userId =
+                await sql`SELECT line_id FROM assistants WHERE initial = ${lect.UserName}`.then(
+                    (res) => (res.length > 0 ? res[0].line_id : null)
+                );
+
+            return {
+                text: `${lect.CourseName} - ${lect.ClassName} - ${lect.Room}`,
+                userId: userId ? userId : lect.UserName,
+                mention: userId ? true : false,
+            };
+        })
+    );
+
+    return messages;
+}
+
+async function notifyAllRegions(
+    activeRegionKeys: Record<string, string>[],
+    nonPresentLecturersByRegion: RegionMap
+) {
+    for (const row of activeRegionKeys) {
+        if (nonPresentLecturersByRegion[row.region]?.length === 0) {
+            console.log(`All ${row.region} lecturers are present.`);
+            continue;
+        }
+        const groupIdReq =
+            await sql`SELECT * FROM active_regions WHERE region = ${row.region} `;
+
+        if (groupIdReq.length === 0) {
+            console.error(`No group ID found for region: ${row.region}`);
+            continue;
+        }
+
+        const groupId = groupIdReq[0];
+
+        const messages = await getNotificationMessages(
+            nonPresentLecturersByRegion[row.region]
+        );
+
+        const sendMessageResponse = await sendTeachingReminderToGroup(
+            messages,
+            groupId.remind_group_line_id
+        );
+        if (!sendMessageResponse.success) {
+            console.error(
+                `Failed to send notification message: ${sendMessageResponse.message}`
+            );
+            lineMessagingApiClient.pushMessage({
+                to: groupId.op_group_line_id,
+                messages: [
+                    {
+                        type: "text",
+                        text: `Dear OP Officers, \n\nAn error occured while checking attendance data.\n\nPlease check attendance transaction immediately.\n\nThank you.`,
+                    },
+                ],
+            });
+        }
+        continue;
+    }
+}
+
+async function notifyByReply(
+    replyToken: string,
+    groupId: string,
+    nonPresentLecturersByRegion: RegionMap
+) {
+    const region =
+        await sql`SELECT region FROM active_regions WHERE remind_group_line_id = ${groupId}`;
+    if (region.length === 0) {
+        console.error(`No region found for group ID: ${groupId}`);
+        return {
+            success: false,
+            message: `No region found for group ID: ${groupId}`,
+        };
+    }
+
+    const messages = await getNotificationMessages(
+        nonPresentLecturersByRegion[region[0].region]
+    );
+
+    await sendTeachingReminderToGroup(messages, groupId, replyToken);
+}
+
+export async function checkTeachingSchedule(
+    type: "push" | "reply" = "push",
+    replyToken?: string,
+    groupId?: string
+): Promise<StandardResponse<void>> {
     try {
         const activeRegionKeys =
             await sql`SELECT DISTINCT(region) FROM active_regions`;
@@ -131,59 +223,22 @@ export async function checkTeachingSchedule(): Promise<StandardResponse<void>> {
         const nonPresentLecturersByRegion =
             getNonPresentLecturersByRegion(attendanceData);
 
-        for (const row of activeRegionKeys) {
-            if (nonPresentLecturersByRegion[row.region]?.length === 0) {
-                console.log(`All ${row.region} lecturers are present.`);
-                continue;
-            }
-            const groupIdReq =
-                await sql`SELECT * FROM active_regions WHERE region = ${row.region} `;
-
-            if (groupIdReq.length === 0) {
-                console.error(`No group ID found for region: ${row.region}`);
-                continue;
-            }
-
-            const groupId = groupIdReq[0];
-
-            const nonPresentLecturers =
-                nonPresentLecturersByRegion[row.region] ?? [];
-
-            const messages = await Promise.all(
-                nonPresentLecturers.map(async (lect) => {
-                    const userId =
-                        await sql`SELECT line_id FROM assistants WHERE initial = ${lect.UserName}`.then(
-                            (res) => (res.length > 0 ? res[0].line_id : null)
-                        );
-
-                    return {
-                        text: `${lect.CourseName} - ${lect.ClassName} - ${lect.Room}`,
-                        userId: userId ? userId : lect.UserName,
-                        mention: userId ? true : false,
-                    };
-                })
+        if (type === "push") {
+            await notifyAllRegions(
+                activeRegionKeys,
+                nonPresentLecturersByRegion
             );
-
-            const sendMessageResponse = await sendTeachingReminderToGroup(
-                messages,
-                groupId.remind_group_line_id
+        } else if (replyToken && groupId) {
+            await notifyByReply(
+                replyToken,
+                groupId,
+                nonPresentLecturersByRegion
             );
-            if (!sendMessageResponse.success) {
-                console.error(
-                    `Failed to send notification message: ${sendMessageResponse.message}`
-                );
-                lineMessagingApiClient.pushMessage({
-                    to: groupId.op_group_line_id,
-                    messages: [
-                        {
-                            type: "text",
-                            text: `Dear OP Officers, \n\nAn error occured while checking attendance data.\n\nPlease check attendance transaction immediately.\n\nThank you.`,
-                        },
-                    ],
-                });
-
-                continue;
-            }
+        } else {
+            return {
+                success: false,
+                message: "Reply token is required for reply type.",
+            };
         }
         return { success: true, message: "Teaching schedule check completed." };
     } catch (error) {

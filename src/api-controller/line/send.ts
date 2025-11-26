@@ -8,7 +8,8 @@ import { NotifyTeachingMessage, StandardResponse } from "@/lib/types";
 
 export async function sendTeachingReminderToGroup(
     messages: NotifyTeachingMessage[],
-    groupLineId: string
+    groupLineId: string,
+    replyToken: string | null = null
 ): Promise<StandardResponse<void>> {
     try {
         const prefixText =
@@ -56,11 +57,17 @@ export async function sendTeachingReminderToGroup(
                     : undefined,
         };
 
-        await lineMessagingApiClient.pushMessage({
-            to: groupLineId,
-            messages: [lineMessage],
-        });
-
+        if (replyToken) {
+            await lineMessagingApiClient.replyMessage({
+                replyToken: replyToken,
+                messages: [lineMessage],
+            });
+        } else {
+            await lineMessagingApiClient.pushMessage({
+                to: groupLineId,
+                messages: [lineMessage],
+            });
+        }
         return {
             success: true,
             message: "Group message sent successfully.",
