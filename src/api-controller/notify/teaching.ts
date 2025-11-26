@@ -182,6 +182,7 @@ async function notifyByReply(
     groupId: string,
     nonPresentLecturersByRegion: RegionMap
 ) {
+    console.log(nonPresentLecturersByRegion);
     const region =
         await sql`SELECT region FROM active_regions WHERE remind_group_line_id = ${groupId}`;
     if (region.length === 0) {
@@ -196,6 +197,8 @@ async function notifyByReply(
         nonPresentLecturersByRegion[region[0].region]
     );
 
+    console.log("Messages to send:", messages);
+
     await sendTeachingReminderToGroup(messages, groupId, replyToken);
 }
 
@@ -205,6 +208,13 @@ export async function checkTeachingSchedule(
     groupId?: string
 ): Promise<StandardResponse<void>> {
     try {
+        console.log(
+            "Starting teaching schedule check...",
+            type,
+            replyToken,
+            groupId
+        );
+
         const activeRegionKeys =
             await sql`SELECT DISTINCT(region) FROM active_regions`;
 

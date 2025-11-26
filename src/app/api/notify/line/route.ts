@@ -27,9 +27,7 @@ export async function POST(request: NextRequest) {
             if (payloadToProcess.message.text.startsWith("CONNECT_LINE_ID-")) {
                 await HandleConnectRequest(payloadToProcess);
                 break;
-            } else if (
-                payloadToProcess.message.text.startsWith("notify_messier")
-            ) {
+            } else if (payloadToProcess.message.text === "notify_messier") {
                 const check =
                     await sql`SELECT role FROM assistants WHERE line_id = ${payloadToProcess.source.userId}`;
 
