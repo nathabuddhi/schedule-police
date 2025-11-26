@@ -25,6 +25,11 @@ export async function POST(request: NextRequest) {
             if (payloadToProcess.message.text.startsWith("CONNECT_LINE_ID-")) {
                 await HandleConnectRequest(payloadToProcess);
                 break;
+            } else if (
+                payloadToProcess.message.text.startsWith("LATE_PERMISSION-")
+            ) {
+                // handle stuff
+                break;
             } else {
                 console.log("Received message:", payloadToProcess);
                 break;

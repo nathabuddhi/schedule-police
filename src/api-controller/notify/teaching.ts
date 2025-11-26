@@ -1,13 +1,14 @@
 import {
     Attendance,
-    errorResponse,
+    NonPresentLecturer,
+    RegionMap,
     Shift,
     ShiftWithDate,
-    successResponse,
+    StandardResponse,
 } from "@/lib/types";
 import { lineMessagingApiClient } from "@/lib/line";
 import { sql } from "@/lib/neon";
-import { sendGroupMessage } from "../line/send";
+import { sendTeachingReminderToGroup } from "@/api-controller/line/send";
 
 function parseTimeToToday(timeString: string) {
     const [hour, minute] = timeString.split(":").map(Number);
@@ -20,12 +21,7 @@ function parseTimeToToday(timeString: string) {
     return nowJakarta;
 }
 
-async function getAttendanceData(): Promise<Attendance[]> {
-    const nowDate = new Date(
-        new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" })
-    );
-    const transactionDate = nowDate.toISOString().split("T")[0];
-
+async function getCurrentShiftId(nowDate: Date): Promise<string | null> {
     const shifts = await fetch(
         "https://bluejack.binus.ac.id/lapi/api/Lecturer/GetShifts",
         {
@@ -38,25 +34,34 @@ async function getAttendanceData(): Promise<Attendance[]> {
 
     const shiftsData = await shifts.json();
 
-    const upcomingShifts: ShiftWithDate[] = shiftsData
-        .map((s: Shift) => ({
-            ...s,
-            startDate: parseTimeToToday(s.Start),
-        }))
-        .sort(
-            (a: ShiftWithDate, b: ShiftWithDate) =>
-                Math.abs(a.startDate.getTime() - nowDate.getTime()) -
-                Math.abs(b.startDate.getTime() - nowDate.getTime())
-        );
+    const shiftsWithDate: ShiftWithDate[] = shiftsData.map((s: Shift) => ({
+        ...s,
+        startDate: parseTimeToToday(s.Start),
+    }));
 
-    const closestShiftId =
-        upcomingShifts.length > 0 ? upcomingShifts[0].ShiftId : null;
+    const futureShifts = shiftsWithDate.filter(
+        (s) => s.startDate.getTime() > nowDate.getTime()
+    );
+
+    if (futureShifts.length === 0) return null;
+
+    futureShifts.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+
+    return futureShifts[0].ShiftId;
+}
+
+async function getAttendanceData(): Promise<Attendance[]> {
+    const nowDate = new Date(
+        new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" })
+    );
+    const transactionDate = nowDate.toISOString().split("T")[0];
+
+    const closestShiftId = await getCurrentShiftId(nowDate);
 
     if (!closestShiftId) {
-        console.log("No upcoming shifts found.");
+        console.warn("No upcoming shifts found.");
         return [];
     }
-    console.log(`Closest shift ID: ${closestShiftId}`);
 
     const attendance = await fetch(
         `https://bluejack.binus.ac.id/lapi/api/Lecturer/GetLecturerAttendanceByLaboratoryId?transactionDate=${transactionDate}&shiftId=${closestShiftId}&labId=f5bbcbf8-7faa-df11-bca3-d8d385fce79c`,
@@ -69,89 +74,124 @@ async function getAttendanceData(): Promise<Attendance[]> {
     );
 
     const attendanceRawData = await attendance.json();
-    console.log(JSON.stringify(attendanceRawData));
     return attendanceRawData.RoomAttendance ?? [];
 }
 
-export async function checkTeachingSchedule() {
+function getNonPresentLecturersByRegion(
+    attendanceData: Attendance[]
+): RegionMap {
+    return attendanceData
+        .filter((a) => !a.GSLC)
+        .reduce<RegionMap>((acc, record) => {
+            const region = record.CampusName;
+
+            const nonPresent = record.Lecturers.map((lect) => {
+                const target =
+                    lect.First.Status === "Substituted"
+                        ? lect.Next
+                        : lect.First;
+
+                if (!target || target.Status === "Present") {
+                    return null;
+                }
+
+                return {
+                    UserName: target.UserName,
+                    CourseName: record.CourseName,
+                    ClassName: record.ClassName,
+                    Room: record.Room,
+                } as NonPresentLecturer;
+            }).filter((i): i is NonPresentLecturer => i !== null);
+
+            if (nonPresent.length > 0) {
+                acc[region] = [...(acc[region] ?? []), ...nonPresent];
+            }
+
+            return acc;
+        }, {});
+}
+
+export async function checkTeachingSchedule(): Promise<StandardResponse<void>> {
     try {
+        const activeRegionKeys =
+            await sql`SELECT DISTINCT(region) FROM active_regions`;
+
+        if (activeRegionKeys.length === 0) {
+            console.warn("No active regions found in the database.");
+            return { success: true, message: "No active regions found." };
+        }
+
         const attendanceData = await getAttendanceData();
 
         if (attendanceData.length === 0) {
             console.log("No attendance data found for current shift.");
-            return successResponse("No Teaching Schedule Found.");
+            return { success: true, message: "No attendance data found." };
         }
 
-        const nonPresentLecturers = attendanceData
-            .filter((a) => a.CampusName === "ASM" && a.GSLC === false)
+        const nonPresentLecturersByRegion =
+            getNonPresentLecturersByRegion(attendanceData);
 
-            .flatMap((a) => {
-                return a.Lecturers.flatMap((lect) => {
-                    const target =
-                        lect.First.Status === "Substituted"
-                            ? lect.Next
-                            : lect.First;
-                    if (target.Status !== "Present") {
-                        return [
-                            {
-                                UserName: target.UserName,
-                                CourseName: a.CourseName,
-                                ClassName: a.ClassName,
-                                Room: a.Room,
-                            },
-                        ];
-                    }
+        for (const row of activeRegionKeys) {
+            if (nonPresentLecturersByRegion[row.region]?.length === 0) {
+                console.log(`All ${row.region} lecturers are present.`);
+                continue;
+            }
+            const groupId =
+                await sql`SELECT * FROM active_regions WHERE region = ${row.region} `;
 
-                    return [];
-                });
-            });
+            if (groupId.length === 0) {
+                console.error(`No group ID found for region: ${row.region}`);
+                continue;
+            }
 
-        console.log(
-            `Non-present lecturers: ${JSON.stringify(nonPresentLecturers)}`
-        );
+            const nonPresentLecturers =
+                nonPresentLecturersByRegion[row.region] ?? [];
 
-        if (nonPresentLecturers.length === 0) {
-            console.log("All lecturers are present.");
-            return successResponse("All lecturers are present.");
-        }
+            const messages = await Promise.all(
+                nonPresentLecturers.map(async (lect) => {
+                    const userId =
+                        await sql`SELECT line_id FROM assistants WHERE initial = ${lect.UserName}`.then(
+                            (res) => (res.length > 0 ? res[0].line_id : null)
+                        );
 
-        const messages = await Promise.all(
-            nonPresentLecturers.map(async (lect) => {
-                const userId =
-                    await sql`SELECT line_id FROM assistants WHERE initial = ${lect.UserName}`.then(
-                        (res) => (res.length > 0 ? res[0].line_id : null)
-                    );
-
-                return {
-                    text: `${lect.CourseName} - ${lect.ClassName} - ${lect.Room}`,
-                    userId: userId ? userId : lect.UserName,
-                    mention: userId ? true : false,
-                };
-            })
-        );
-        console.log(`Messages to be sent: ${JSON.stringify(messages)}`);
-
-        const sendMessageResponse = await sendGroupMessage(messages);
-
-        if (!sendMessageResponse.success) {
-            throw new Error(
-                `Failed to send notification message: ${sendMessageResponse.message}`
+                    return {
+                        text: `${lect.CourseName} - ${lect.ClassName} - ${lect.Room}`,
+                        userId: userId ? userId : lect.UserName,
+                        mention: userId ? true : false,
+                    };
+                })
             );
+
+            const sendMessageResponse = await sendTeachingReminderToGroup(
+                messages,
+                groupId[0].remind_group_line_id
+            );
+            if (!sendMessageResponse.success) {
+                console.error(
+                    `Failed to send notification message: ${sendMessageResponse.message}`
+                );
+                lineMessagingApiClient.pushMessage({
+                    to: groupId[0].op_group_line_id,
+                    messages: [
+                        {
+                            type: "text",
+                            text: `Dear OP Officers, \n\nAn error occured while checking attendance data.\n\nPlease check attendance transaction immediately.\n\nThank you.`,
+                        },
+                    ],
+                });
+
+                continue;
+            }
         }
-        return successResponse("Teaching schedule check completed.");
+        return { success: true, message: "Teaching schedule check completed." };
     } catch (error) {
         console.error("Error in checking teaching schedule:", error);
 
-        lineMessagingApiClient.pushMessage({
-            to: process.env.LINE_RMOSUBCO_GROUP_ID!,
-            messages: [
-                {
-                    type: "text",
-                    text: `Dear RMO & Subco, \n\nAn error occured while checking attendance data.\n\nPlease check attendance transaction immediately.\n\nThank you.`,
-                },
-            ],
-        });
-
-        return errorResponse("An internal error occured: " + error, 500);
+        return {
+            success: false,
+            message: `Error checking teaching schedule: ${
+                error instanceof Error ? error.message : "Unknown error"
+            }`,
+        };
     }
 }

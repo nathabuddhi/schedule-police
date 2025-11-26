@@ -1,5 +1,5 @@
 import { checkTeachingSchedule } from "@/api-controller/notify/teaching";
-import { errorResponse } from "@/lib/types";
+import { errorResponse, successResponse } from "@/lib/types";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -9,5 +9,7 @@ export async function POST(request: NextRequest) {
         return errorResponse("Unauthorized.", 401);
     }
 
-    return await checkTeachingSchedule();
+    const response = await checkTeachingSchedule();
+    if (!response.success) return errorResponse(response.message, 500);
+    else return successResponse(response.message);
 }
