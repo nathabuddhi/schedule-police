@@ -90,7 +90,9 @@ function getNonPresentLecturersByRegion(
 
             const nonPresent = record.Lecturers.map((lect) => {
                 const target =
-                    lect.First.Status === "Substituted"
+                    lect.First.Status === "Substituted" ||
+                    lect.First.Status === "Permission" ||
+                    lect.First.Status === "Special Permission"
                         ? lect.Next
                         : lect.First;
 
