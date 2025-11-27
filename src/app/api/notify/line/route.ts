@@ -4,6 +4,7 @@ import { verifyLineSignature } from "@/api-controller/line/verify";
 import { HandleConnectRequest } from "@/api-controller/assistant/connect";
 import { checkTeachingSchedule } from "@/api-controller/notify/teaching";
 import { sql } from "@/lib/neon";
+import { replyMessage } from "@/api-controller/line/send";
 
 export async function POST(request: NextRequest) {
     const body = await request.text();
@@ -27,17 +28,21 @@ export async function POST(request: NextRequest) {
             if (payloadToProcess.message.text.startsWith("CONNECT_LINE_ID-")) {
                 await HandleConnectRequest(payloadToProcess);
                 break;
-            } else if (payloadToProcess.message.text === "notify_messier") {
+            } else if (payloadToProcess.message.text === "/notifymessier") {
                 const check =
                     await sql`SELECT role FROM assistants WHERE line_id = ${payloadToProcess.source.userId}`;
 
-                if (check.length === 0 && check[0].role === "ADMIN")
+                if (check.length !== 0 && check[0].role === "ADMIN")
                     await checkTeachingSchedule(
                         "reply",
                         payloadToProcess.replyToken,
                         payloadToProcess.source.groupId ?? ""
                     );
-                break;
+                else
+                    await replyMessage(
+                        payloadToProcess.replyToken,
+                        "You do not have permission to use this command."
+                    );
             } else {
                 console.log("Received message:", payloadToProcess);
                 break;
