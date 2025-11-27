@@ -4,7 +4,7 @@ import { verifyLineSignature } from "@/api-controller/line/verify";
 import { HandleConnectRequest } from "@/api-controller/assistant/connect";
 import { checkTeachingSchedule } from "@/api-controller/notify/teaching";
 import { sql } from "@/lib/neon";
-import { replyMessage } from "@/api-controller/line/send";
+// import { replyMessage } from "@/api-controller/line/send";
 
 export async function POST(request: NextRequest) {
     const body = await request.text();
@@ -38,11 +38,11 @@ export async function POST(request: NextRequest) {
                         payloadToProcess.replyToken,
                         payloadToProcess.source.groupId ?? ""
                     );
-                else
-                    await replyMessage(
-                        payloadToProcess.replyToken,
-                        "You do not have permission to use this command."
-                    );
+                // else
+                //     await replyMessage(
+                //         payloadToProcess.replyToken,
+                //         "You do not have permission to use this command."
+                //     );
             } else {
                 console.log("Received message:", payloadToProcess);
                 break;

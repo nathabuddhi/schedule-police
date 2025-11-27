@@ -8,7 +8,10 @@ import {
 } from "@/lib/types";
 import { lineMessagingApiClient } from "@/lib/line";
 import { sql } from "@/lib/neon";
-import { sendTeachingReminderToGroup } from "@/api-controller/line/send";
+import {
+    replyMessage,
+    sendTeachingReminderToGroup,
+} from "@/api-controller/line/send";
 
 function parseTimeToToday(timeString: string) {
     const [hour, minute] = timeString.split(":").map(Number);
@@ -187,17 +190,28 @@ async function notifyByReply(
         await sql`SELECT region FROM active_regions WHERE remind_group_line_id = ${groupId}`;
     if (region.length === 0) {
         console.error(`No region found for group ID: ${groupId}`);
+        replyMessage(
+            replyToken,
+            `This group isn't registered as a reminder group.`
+        );
         return {
             success: false,
             message: `No region found for group ID: ${groupId}`,
         };
     }
 
-    const messages = await getNotificationMessages(
-        nonPresentLecturersByRegion[region[0].region]
-    );
+    const nonPresentLecturers = nonPresentLecturersByRegion[region[0].region];
+    if (!nonPresentLecturers || nonPresentLecturers.length === 0) {
+        console.log(`All ${region[0].region} lecturers are present.`);
+        replyMessage(replyToken, `All lecturers are present.`);
+        return;
+    }
 
-    console.log("Messages to send:", messages);
+    const messages = await getNotificationMessages(nonPresentLecturers);
+
+    if (messages.length === 0) {
+        replyMessage(replyToken, `All lecturers are present.`);
+    }
 
     await sendTeachingReminderToGroup(messages, groupId, replyToken);
 }
@@ -227,6 +241,11 @@ export async function checkTeachingSchedule(
 
         if (attendanceData.length === 0) {
             console.log("No attendance data found for current shift.");
+            if (replyToken)
+                replyMessage(
+                    replyToken,
+                    "No attendance data found for current shift."
+                );
             return { success: true, message: "No attendance data found." };
         }
 
