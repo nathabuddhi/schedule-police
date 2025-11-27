@@ -2,9 +2,7 @@ import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/types";
 import { verifyLineSignature } from "@/api-controller/line/verify";
 import { HandleConnectRequest } from "@/api-controller/assistant/connect";
-import { checkTeachingSchedule } from "@/api-controller/notify/teaching";
-import { sql } from "@/lib/neon";
-// import { replyMessage } from "@/api-controller/line/send";
+import { manualNotifyTeachingSchedule } from "@/api-controller/notify/teaching";
 
 export async function POST(request: NextRequest) {
     const body = await request.text();
@@ -25,24 +23,17 @@ export async function POST(request: NextRequest) {
 
     switch (payloadToProcess.type) {
         case "message":
-            if (payloadToProcess.message.text.startsWith("CONNECT_LINE_ID-")) {
-                await HandleConnectRequest(payloadToProcess);
+            const text = payloadToProcess.message.text;
+            if (text.startsWith("CONNECT_LINE_ID-")) {
+                HandleConnectRequest(payloadToProcess);
                 break;
-            } else if (payloadToProcess.message.text === "/notifymessier") {
-                const check =
-                    await sql`SELECT role FROM assistants WHERE line_id = ${payloadToProcess.source.userId}`;
-
-                if (check.length !== 0 && check[0].role === "ADMIN")
-                    await checkTeachingSchedule(
-                        "reply",
-                        payloadToProcess.replyToken,
-                        payloadToProcess.source.groupId ?? ""
-                    );
-                // else
-                //     await replyMessage(
-                //         payloadToProcess.replyToken,
-                //         "You do not have permission to use this command."
-                //     );
+            } else if (text === "/notifymessier") {
+                manualNotifyTeachingSchedule(payloadToProcess);
+                break;
+            } else if (text === "/checkmessier") {
+                // manualCheckTeachingSchedule(payloadToProcess);
+            } else if (text.startsWith("/updatestatus")) {
+                // manualCheckTeachingSchedule(payloadToProcess);
             } else {
                 console.log("Received message:", payloadToProcess);
                 break;

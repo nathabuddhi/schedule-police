@@ -216,7 +216,7 @@ async function notifyByReply(
     await sendTeachingReminderToGroup(messages, groupId, replyToken);
 }
 
-export async function checkTeachingSchedule(
+export async function notifyTeachingSchedule(
     type: "push" | "reply" = "push",
     replyToken?: string,
     groupId?: string
@@ -280,4 +280,26 @@ export async function checkTeachingSchedule(
             }`,
         };
     }
+}
+
+export async function manualNotifyTeachingSchedule(payloadToProcess: {
+    replyToken: string;
+    source: { userId: string; groupId?: string };
+}): Promise<void> {
+    const check =
+        await sql`SELECT role FROM assistants WHERE line_id = ${payloadToProcess.source.userId}`;
+
+    if (check.length !== 0 && check[0].role === "ADMIN")
+        notifyTeachingSchedule(
+            "reply",
+            payloadToProcess.replyToken,
+            payloadToProcess.source.groupId ?? ""
+        );
+
+    // else
+    //     await replyMessage(
+    //         payloadToProcess.replyToken,
+    //         "You do not have permission to use this command."
+    //     );
+    return;
 }
