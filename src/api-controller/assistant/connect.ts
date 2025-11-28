@@ -1,7 +1,7 @@
 import { sql } from "@/lib/neon";
 import { errorResponse, successResponse } from "@/lib/types";
 import { LineWebhookMessagePayload } from "@/api-controller/line/types";
-import { replyMessage } from "../line/send";
+import { replyMessage } from "@/api-controller/line/send";
 
 export async function GetConnectionString(username: string) {
     try {
