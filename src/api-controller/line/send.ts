@@ -90,9 +90,10 @@ export async function sendTeachingReminderToGroup(
 export async function sendTeachingAttendanceByReply(
     replyToken: string,
     attendanceData: Attendance[],
-    shift: ShiftWithDate | null
+    shift: ShiftWithDate | null,
+    region: string = "ALL"
 ) {
-    const prefixText = `Current Teaching Attendance: \n\nCurrent Data: ${
+    const prefixText = `Current Teaching Attendance - ${region} Region\n\nCurrent Date: ${
         shift?.startDate ?? "N/A"
     }\nCurrent Shift: ${shift?.Start ?? "N/A"} - ${shift?.End ?? "N/A"}\n\n`;
 
@@ -109,7 +110,7 @@ export async function sendTeachingAttendanceByReply(
         return;
     }
 
-    const messages: Message[] = attendanceData.map((data, index) => {
+    const messages: string[] = attendanceData.map((data, index) => {
         const lecturersStatus = data.Lecturers.map((lect) => {
             const target =
                 lect.First.Status === "Substituted" ||
@@ -123,10 +124,7 @@ export async function sendTeachingAttendanceByReply(
         const text = `${index + 1}. Room: ${data.Room} - ${data.CourseName} - ${
             data.ClassName
         }\n${lecturersStatus}\n`;
-        return {
-            type: "text",
-            text: text,
-        } as Message;
+        return text;
     });
 
     const fullText = prefixText + messages.join("\n");

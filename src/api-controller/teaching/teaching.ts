@@ -257,16 +257,26 @@ export async function manualNotifyTeachingSchedule(payloadToProcess: {
 export async function manualCheckTeachingSchedule(payloadToProcess: {
     replyToken: string;
     source: { userId: string; groupId?: string };
+    message: { text: string };
 }): Promise<void> {
     const check =
         await sql`SELECT role FROM assistants WHERE line_id = ${payloadToProcess.source.userId}`;
     if (check.length !== 0 && check[0].role === "ADMIN") {
-        const attendanceData = await getAttendanceData();
+        const region = payloadToProcess.message.text.split(" ")[1] ?? "ALL";
+
+        const attendanceRawData = await getAttendanceData();
+        if (region !== "ALL") {
+            const filteredAttendance = attendanceRawData.attendance.filter(
+                (att) => att.CampusName === region
+            );
+            attendanceRawData.attendance = filteredAttendance;
+        }
 
         sendTeachingAttendanceByReply(
             payloadToProcess.replyToken,
-            attendanceData.attendance,
-            attendanceData.shift
+            attendanceRawData.attendance,
+            attendanceRawData.shift,
+            region
         );
     }
 }

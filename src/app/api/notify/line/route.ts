@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
             } else if (text === "/notifymessier") {
                 manualNotifyTeachingSchedule(payloadToProcess);
                 break;
-            } else if (text === "/checkmessier") {
+            } else if (text.startsWith("/checkmessier")) {
                 manualCheckTeachingSchedule(payloadToProcess);
             } else if (text.startsWith("/updatestatus")) {
                 // manualCheckTeachingSchedule(payloadToProcess);
