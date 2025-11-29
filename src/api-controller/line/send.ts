@@ -4,7 +4,12 @@ import {
     Message,
     TextMessageV2,
 } from "@/lib/line";
-import { NotifyTeachingMessage, StandardResponse } from "@/lib/types";
+import {
+    Attendance,
+    NotifyTeachingMessage,
+    ShiftWithDate,
+    StandardResponse,
+} from "@/lib/types";
 
 export async function sendTeachingReminderToGroup(
     messages: NotifyTeachingMessage[],
@@ -80,6 +85,48 @@ export async function sendTeachingReminderToGroup(
             message: "An error occurred while sending the group message.",
         };
     }
+}
+
+export async function sendTeachingAttendanceByReply(
+    replyToken: string,
+    attendanceData: Attendance[],
+    shift: ShiftWithDate | null
+) {
+    const prefixText = `Current Teaching Attendance: \n\nCurrent Data: ${
+        shift?.startDate ?? "N/A"
+    }\nCurrent Shift: ${shift?.Start ?? "N/A"} - ${shift?.End ?? "N/A"}\n\n`;
+
+    const messages: Message[] = attendanceData.map((data, index) => {
+        const lecturersStatus = data.Lecturers.map((lect) => {
+            const target =
+                lect.First.Status === "Substituted" ||
+                lect.First.Status === "Permission" ||
+                lect.First.Status === "Special Permission"
+                    ? lect.Next
+                    : lect.First;
+            return `- ${target.UserName}: ${target.Status}`;
+        }).join("\n");
+
+        const text = `${index + 1}. Room: ${data.Room} - ${data.CourseName} - ${
+            data.ClassName
+        }\n${lecturersStatus}\n`;
+        return {
+            type: "text",
+            text: text,
+        } as Message;
+    });
+
+    const fullText = prefixText + messages.join("\n");
+
+    lineMessagingApiClient.replyMessage({
+        replyToken: replyToken,
+        messages: [
+            {
+                type: "text",
+                text: fullText,
+            },
+        ],
+    });
 }
 
 export function replyMessage(replyToken: string, message: string) {

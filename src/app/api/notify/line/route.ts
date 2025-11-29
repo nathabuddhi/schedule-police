@@ -2,7 +2,10 @@ import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/types";
 import { verifyLineSignature } from "@/api-controller/line/verify";
 import { HandleConnectRequest } from "@/api-controller/assistant/connect";
-import { manualNotifyTeachingSchedule } from "@/api-controller/notify/teaching";
+import {
+    manualNotifyTeachingSchedule,
+    manualCheckTeachingSchedule,
+} from "@/api-controller/teaching/teaching";
 
 export async function POST(request: NextRequest) {
     const body = await request.text();
@@ -31,7 +34,7 @@ export async function POST(request: NextRequest) {
                 manualNotifyTeachingSchedule(payloadToProcess);
                 break;
             } else if (text === "/checkmessier") {
-                // manualCheckTeachingSchedule(payloadToProcess);
+                manualCheckTeachingSchedule(payloadToProcess);
             } else if (text.startsWith("/updatestatus")) {
                 // manualCheckTeachingSchedule(payloadToProcess);
             } else {

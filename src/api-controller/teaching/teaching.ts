@@ -1,6 +1,5 @@
 import {
     Attendance,
-    NonPresentLecturer,
     RegionMap,
     Shift,
     ShiftWithDate,
@@ -10,21 +9,16 @@ import { lineMessagingApiClient } from "@/lib/line";
 import { sql } from "@/lib/neon";
 import {
     replyMessage,
+    sendTeachingAttendanceByReply,
     sendTeachingReminderToGroup,
 } from "@/api-controller/line/send";
+import {
+    getNonPresentLecturersByRegion,
+    getNotificationMessages,
+    parseTimeToToday,
+} from "@/api-controller/teaching/helper";
 
-function parseTimeToToday(timeString: string) {
-    const [hour, minute] = timeString.split(":").map(Number);
-
-    const nowJakarta = new Date(
-        new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" })
-    );
-
-    nowJakarta.setHours(hour, minute, 0, 0);
-    return nowJakarta;
-}
-
-async function getCurrentShiftId(nowDate: Date): Promise<string | null> {
+async function getCurrentShift(nowDate: Date): Promise<ShiftWithDate | null> {
     const shifts = await fetch(
         "https://bluejack.binus.ac.id/lapi/api/Lecturer/GetShifts",
         {
@@ -50,20 +44,27 @@ async function getCurrentShiftId(nowDate: Date): Promise<string | null> {
 
     futureShifts.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
 
-    return futureShifts[0].ShiftId;
+    return futureShifts[0];
 }
 
-async function getAttendanceData(): Promise<Attendance[]> {
+async function getAttendanceData(): Promise<{
+    attendance: Attendance[];
+    shift: ShiftWithDate | null;
+}> {
     const nowDate = new Date(
         new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" })
     );
     const transactionDate = nowDate.toISOString().split("T")[0];
 
-    const closestShiftId = await getCurrentShiftId(nowDate);
+    const closestShift = await getCurrentShift(nowDate);
+    const closestShiftId = closestShift ? closestShift.ShiftId : null;
 
     if (!closestShiftId) {
         console.warn("No upcoming shifts found.");
-        return [];
+        return {
+            attendance: [],
+            shift: null,
+        };
     }
 
     const attendance = await fetch(
@@ -77,64 +78,10 @@ async function getAttendanceData(): Promise<Attendance[]> {
     );
 
     const attendanceRawData = await attendance.json();
-    return attendanceRawData.RoomAttendance ?? [];
-}
-
-function getNonPresentLecturersByRegion(
-    attendanceData: Attendance[]
-): RegionMap {
-    return attendanceData
-        .filter((a) => !a.GSLC)
-        .reduce<RegionMap>((acc, record) => {
-            const region = record.CampusName;
-
-            const nonPresent = record.Lecturers.map((lect) => {
-                const target =
-                    lect.First.Status === "Substituted" ||
-                    lect.First.Status === "Permission" ||
-                    lect.First.Status === "Special Permission"
-                        ? lect.Next
-                        : lect.First;
-
-                if (!target || target.Status === "Present") {
-                    return null;
-                }
-
-                return {
-                    UserName: target.UserName,
-                    CourseName: record.CourseName,
-                    ClassName: record.ClassName,
-                    Room: record.Room,
-                } as NonPresentLecturer;
-            }).filter((i): i is NonPresentLecturer => i !== null);
-
-            if (nonPresent.length > 0) {
-                acc[region] = [...(acc[region] ?? []), ...nonPresent];
-            }
-
-            return acc;
-        }, {});
-}
-
-async function getNotificationMessages(
-    nonPresentLecturers: NonPresentLecturer[]
-) {
-    const messages = await Promise.all(
-        nonPresentLecturers.map(async (lect) => {
-            const userId =
-                await sql`SELECT line_id FROM assistants WHERE initial = ${lect.UserName}`.then(
-                    (res) => (res.length > 0 ? res[0].line_id : null)
-                );
-
-            return {
-                text: `${lect.CourseName} - ${lect.ClassName} - ${lect.Room}`,
-                userId: userId ? userId : lect.UserName,
-                mention: userId ? true : false,
-            };
-        })
-    );
-
-    return messages;
+    return {
+        attendance: attendanceRawData.RoomAttendance ?? [],
+        shift: closestShift,
+    };
 }
 
 async function notifyAllRegions(
@@ -241,7 +188,7 @@ export async function notifyTeachingSchedule(
 
         const attendanceData = await getAttendanceData();
 
-        if (attendanceData.length === 0) {
+        if (attendanceData.attendance.length === 0) {
             console.log("No attendance data found for current shift.");
             if (replyToken)
                 replyMessage(
@@ -251,8 +198,9 @@ export async function notifyTeachingSchedule(
             return { success: true, message: "No attendance data found." };
         }
 
-        const nonPresentLecturersByRegion =
-            getNonPresentLecturersByRegion(attendanceData);
+        const nonPresentLecturersByRegion = getNonPresentLecturersByRegion(
+            attendanceData.attendance
+        );
 
         if (type === "push") {
             await notifyAllRegions(
@@ -304,4 +252,28 @@ export async function manualNotifyTeachingSchedule(payloadToProcess: {
     //         "You do not have permission to use this command."
     //     );
     return;
+}
+
+export async function manualCheckTeachingSchedule(payloadToProcess: {
+    replyToken: string;
+    source: { userId: string; groupId?: string };
+}): Promise<void> {
+    const check =
+        await sql`SELECT role FROM assistants WHERE line_id = ${payloadToProcess.source.userId}`;
+    if (check.length !== 0 && check[0].role === "ADMIN") {
+        const attendanceData = await getAttendanceData();
+        if (attendanceData.attendance.length === 0) {
+            await replyMessage(
+                payloadToProcess.replyToken,
+                "No attendance data found for current shift."
+            );
+            return;
+        }
+
+        sendTeachingAttendanceByReply(
+            payloadToProcess.replyToken,
+            attendanceData.attendance,
+            attendanceData.shift
+        );
+    }
 }
