@@ -262,13 +262,6 @@ export async function manualCheckTeachingSchedule(payloadToProcess: {
         await sql`SELECT role FROM assistants WHERE line_id = ${payloadToProcess.source.userId}`;
     if (check.length !== 0 && check[0].role === "ADMIN") {
         const attendanceData = await getAttendanceData();
-        if (attendanceData.attendance.length === 0) {
-            await replyMessage(
-                payloadToProcess.replyToken,
-                "No attendance data found for current shift."
-            );
-            return;
-        }
 
         sendTeachingAttendanceByReply(
             payloadToProcess.replyToken,

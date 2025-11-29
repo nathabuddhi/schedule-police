@@ -96,6 +96,19 @@ export async function sendTeachingAttendanceByReply(
         shift?.startDate ?? "N/A"
     }\nCurrent Shift: ${shift?.Start ?? "N/A"} - ${shift?.End ?? "N/A"}\n\n`;
 
+    if (attendanceData.length === 0) {
+        lineMessagingApiClient.replyMessage({
+            replyToken: replyToken,
+            messages: [
+                {
+                    type: "text",
+                    text: prefixText + "No attendance data available.",
+                },
+            ],
+        });
+        return;
+    }
+
     const messages: Message[] = attendanceData.map((data, index) => {
         const lecturersStatus = data.Lecturers.map((lect) => {
             const target =
