@@ -28,7 +28,7 @@ export function getNonPresentLecturersByRegion(
                         ? lect.Next
                         : lect.First;
 
-                if (!target || target.Status === "Present") {
+                if (!target || target.Status === "Present" || target.Status === "Cancelled") {
                     return null;
                 }
 

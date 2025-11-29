@@ -94,7 +94,7 @@ export async function sendTeachingAttendanceByReply(
     region: string = "ALL"
 ) {
     const prefixText = `Current Teaching Attendance - ${region} Region\n\nCurrent Date: ${
-        shift?.startDate ?? "N/A"
+        shift?.startDate.toLocaleDateString() ?? "N/A"
     }\nCurrent Shift: ${shift?.Start ?? "N/A"} - ${shift?.End ?? "N/A"}\n\n`;
 
     if (attendanceData.length === 0) {
