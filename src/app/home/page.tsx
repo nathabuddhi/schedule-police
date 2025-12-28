@@ -105,21 +105,8 @@ export default function Page() {
                         {permissions.length > 0 ? (
                             permissions.map((p) => (
                                 <PermissionCard
-                                    key={p.id}
-                                    request={{
-                                        id: p.id,
-                                        senderName: p.initial,
-                                        reason: p.reason,
-                                        classCode: p.class,
-                                        time: p.shiftid,
-                                        courseCode: p.course,
-                                        room: p.room,
-                                        status: p.status as
-                                            | "pending"
-                                            | "approved"
-                                            | "rejected",
-                                        statusReason: p.status_reason,
-                                    }}
+                                    key={p.id} // ✅ ADD THIS
+                                    permission={p}
                                     onApprove={async (id) => {
                                         await fetch("/api/permissions", {
                                             method: "PATCH",

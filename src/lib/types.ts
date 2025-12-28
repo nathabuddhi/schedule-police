@@ -102,4 +102,16 @@ export interface Permission {
     shiftid: string;
 }
 
+export interface Assistant {
+    initial: string;
+    role: string;
+}
+
+export interface AssistantCardProps {
+    assistant: Assistant;
+    onRoleChange: (newRole: string) => void;
+}
+
+
+
 export type RegionMap = Record<string, NonPresentLecturer[]>;

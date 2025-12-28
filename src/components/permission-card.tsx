@@ -3,29 +3,20 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import type { Permission } from "@/lib/types";
 
-interface PermissionRequestCardProps {
-    request: {
-        id: string;
-        senderName: string;
-        classCode: string;
-        reason: string;
-        courseCode: string;
-        time: string;
-        room: string;
-        status: "pending" | "approved" | "rejected";
-        statusReason?: string | null;
-    };
+interface PermissionCardProps {
+    permission: Permission;
     onApprove?: (id: string) => void;
     onReject?: (id: string, reason: string) => void;
 }
 
 export function PermissionCard({
-    request,
+    permission,
     onApprove,
     onReject,
-}: PermissionRequestCardProps) {
-    const isPending = request.status === "pending";
+}: PermissionCardProps) {
+    const isPending = permission.status === "pending";
 
     const [showRejectionForm, setShowRejectionForm] = useState(false);
     const [rejectionReason, setRejectionReason] = useState("");
@@ -42,7 +33,7 @@ export function PermissionCard({
         pending: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
         approved: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
         rejected: "bg-rose-500/10 text-rose-600 border-rose-500/20",
-    }[request.status];
+    }[permission.status];
 
     return (
         <Card className="relative overflow-hidden border-white/20 bg-white/10 backdrop-blur-md dark:bg-black/20">
@@ -50,23 +41,23 @@ export function PermissionCard({
                 {/* Header */}
                 <div className="flex items-start gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 text-white font-bold">
-                        {getInitials(request.senderName)}
+                        {getInitials(permission.initial)}
                     </div>
 
                     <div className="flex-1">
                         <div className="flex items-center justify-between">
                             <h3 className="font-bold text-lg truncate">
-                                {request.senderName}
+                                {permission.initial}
                             </h3>
                             <span
                                 className={`text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-full border ${statusBadge}`}
                             >
-                                {request.status}
+                                {permission.status}
                             </span>
                         </div>
 
                         <p className="text-sm text-muted-foreground italic mt-1">
-                            “{request.reason}”
+                            “{permission.reason}”
                         </p>
                     </div>
                 </div>
@@ -74,26 +65,27 @@ export function PermissionCard({
                 {/* Meta */}
                 <div className="grid grid-cols-2 gap-2 text-[12px] text-muted-foreground">
                     <div className="bg-black/5 dark:bg-white/5 p-2 rounded-lg">
-                        🕒 {request.time}
+                        🕒 {permission.shiftid}
                     </div>
                     <div className="bg-black/5 dark:bg-white/5 p-2 rounded-lg">
-                        📍 Room {request.room}
+                        📍 Room {permission.room}
                     </div>
                 </div>
 
                 {/* Rejection reason (history only) */}
-                {request.status === "rejected" && request.statusReason && (
-                    <div className="text-sm p-3 rounded-xl bg-rose-500/10 text-rose-600 border border-rose-500/20">
-                        <strong>Rejection reason:</strong>{" "}
-                        {request.statusReason}
-                    </div>
-                )}
+                {permission.status === "rejected" &&
+                    permission.status_reason && (
+                        <div className="text-sm p-3 rounded-xl bg-rose-500/10 text-rose-600 border border-rose-500/20">
+                            <strong>Rejection reason:</strong>{" "}
+                            {permission.status_reason}
+                        </div>
+                    )}
 
                 {/* Actions (ONLY for pending) */}
                 {isPending && !showRejectionForm && (
                     <div className="flex gap-3 pt-2">
                         <Button
-                            onClick={() => onApprove?.(request.id)}
+                            onClick={() => onApprove?.(permission.id)}
                             className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
                         >
                             Approve
@@ -119,7 +111,7 @@ export function PermissionCard({
                         <div className="flex gap-2">
                             <Button
                                 onClick={() =>
-                                    onReject?.(request.id, rejectionReason)
+                                    onReject?.(permission.id, rejectionReason)
                                 }
                                 disabled={!rejectionReason.trim()}
                                 className="flex-1 bg-rose-500 text-white"

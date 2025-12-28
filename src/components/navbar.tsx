@@ -81,7 +81,8 @@ export default function Navbar() {
                                     <NavigationMenuContent className="px-4 py-2 w-[200px]">
                                         <NavigationMenuLink
                                             asChild
-                                            className="w-[200px]">
+                                            className="w-[200px]"
+                                        >
                                             <Link href="/admin/assistants">
                                                 Manage Assistants List
                                             </Link>
@@ -107,7 +108,8 @@ export default function Navbar() {
                             </SheetTrigger>
                             <SheetContent
                                 side="right"
-                                className="w-[280px] flex flex-col">
+                                className="w-[280px] flex flex-col"
+                            >
                                 <SheetHeader>
                                     <SheetTitle className="text-left">
                                         Hello, {user?.username}
@@ -123,7 +125,8 @@ export default function Navbar() {
                                             <Button
                                                 variant="ghost"
                                                 className="justify-start pl-6"
-                                                asChild>
+                                                asChild
+                                            >
                                                 <Link href="/admin/assistants">
                                                     Manage Assistants List
                                                 </Link>
