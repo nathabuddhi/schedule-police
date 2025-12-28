@@ -6,6 +6,7 @@ import {
     approvePermission,
     rejectPermission,
     getSelfPermissions,
+    createPermission,
 } from "@/api-controller/permission/permission";
 import { getUserFromRequest } from "@/lib/server-auth";
 
@@ -37,6 +38,12 @@ export async function GET(req: Request) {
             }
 
             result = await getSelfPermissions(user.initial);
+            break;
+        }
+
+        case "create": {
+            const body = await req.json();
+            result = await createPermission(body);
             break;
         }
 

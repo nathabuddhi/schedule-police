@@ -185,3 +185,63 @@ export async function getSelfPermissions(
         };
     }
 }
+
+export async function createPermission(
+    payload: Omit<Permission, "id" | "status" | "status_reason">
+): Promise<StandardResponse<Permission>> {
+    try {
+        const {
+            initial,
+            reason,
+            class: classCode,
+            room,
+            course,
+            shiftid,
+        } = payload;
+
+        const rows = (await sql`
+            INSERT INTO permissions (
+                initial,
+                reason,
+                class,
+                room,
+                course,
+                shiftid,
+                status,
+                status_reason
+            )
+            VALUES (
+                ${initial},
+                ${reason},
+                ${classCode},
+                ${room},
+                ${course},
+                ${shiftid},
+                'pending',
+                NULL
+            )
+            RETURNING 
+                id,
+                initial,
+                reason,
+                status,
+                status_reason,
+                class,
+                room,
+                course,
+                shiftid
+        `) as Permission[];
+
+        return {
+            success: true,
+            message: "Permission created successfully.",
+            data: rows[0],
+        };
+    } catch (error) {
+        console.error("Error creating permission:", error);
+        return {
+            success: false,
+            message: "Failed to create permission.",
+        };
+    }
+}
