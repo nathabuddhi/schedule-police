@@ -39,6 +39,8 @@ export default function AssistantsPage() {
     useEffect(() => {
         if (user?.role === "ADMIN") {
             fetchAssistants();
+        } else {
+            setFetching(false);
         }
     }, [user, fetchAssistants]);
 
@@ -96,17 +98,16 @@ export default function AssistantsPage() {
             <Navbar />
 
             <main className="max-w-5xl mx-auto p-8 space-y-8">
-                {/* Header */}
+
                 <header className="space-y-1">
                     <h1 className="text-3xl font-bold tracking-tight">
                         Assistants
                     </h1>
                     <p className="text-muted-foreground">
-                        Manage your team roles and permissions.
+                        Manage Assistant Roles.
                     </p>
                 </header>
 
-                {/* Controls */}
                 <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
                     <input
                         type="text"
@@ -144,7 +145,6 @@ export default function AssistantsPage() {
                     </div>
                 </div>
 
-                {/* Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {filteredAssistants.length > 0 ? (
                         filteredAssistants.map((assistant) => (

@@ -51,6 +51,7 @@ export default function Navbar() {
     ];
 
     if (loading || !user) return null;
+
     return (
         <>
             <div className="hidden md:flex flex-col">
@@ -60,30 +61,50 @@ export default function Navbar() {
                         <div className="flex items-center gap-4 text-xl font-medium text-foreground">
                             <p>
                                 <TypingAnimation words={words} loop />{" "}
-                                {user?.username}
+                                {user.username}
                             </p>
                             <LogoutButton />
                             <ModeToggle />
                         </div>
                     </div>
                 </div>
-                <div className="px-30 py-2 gap-10">
+
+                <div className="px-30 py-2">
                     <NavigationMenu>
                         <NavigationMenuList>
                             <NavigationMenuItem>
                                 <LinkAccountDialog />
                             </NavigationMenuItem>
-                            {user?.role === "ADMIN" && (
+
+                            {user.role === "ADMIN" && (
                                 <NavigationMenuItem>
                                     <NavigationMenuTrigger>
                                         Admin
                                     </NavigationMenuTrigger>
-                                    <NavigationMenuContent className="px-4 py-2 w-[200px]">
-                                        <NavigationMenuLink
-                                            asChild
-                                            className="w-[200px]"
-                                        >
-                                            <Link href="/admin/assistants">
+                                    <NavigationMenuContent className="px-4 py-3 w-[220px] space-y-2">
+                                        <NavigationMenuLink asChild>
+                                            <Link
+                                                href="/home"
+                                                className="block rounded-md px-2 py-2 hover:bg-muted transition-colors"
+                                            >
+                                                Manage Permissions
+                                            </Link>
+                                        </NavigationMenuLink>
+
+                                        <NavigationMenuLink asChild>
+                                            <Link
+                                                href="/admin/mypermissions"
+                                                className="block rounded-md px-2 py-2 hover:bg-muted transition-colors"
+                                            >
+                                                My Own Permissions
+                                            </Link>
+                                        </NavigationMenuLink>
+
+                                        <NavigationMenuLink asChild>
+                                            <Link
+                                                href="/admin/assistants"
+                                                className="block rounded-md px-2 py-2 hover:bg-muted transition-colors"
+                                            >
                                                 Manage Assistants List
                                             </Link>
                                         </NavigationMenuLink>
@@ -106,22 +127,44 @@ export default function Navbar() {
                                     <Menu className="h-6 w-6" />
                                 </Button>
                             </SheetTrigger>
+
                             <SheetContent
                                 side="right"
                                 className="w-[280px] flex flex-col"
                             >
                                 <SheetHeader>
                                     <SheetTitle className="text-left">
-                                        Hello, {user?.username}
+                                        Hello, {user.username}
                                     </SheetTitle>
                                 </SheetHeader>
+
                                 <div className="flex flex-col gap-2 mt-6 flex-1">
                                     <LinkAccountDialog />
-                                    {user?.role === "ADMIN" && (
+
+                                    {user.role === "ADMIN" && (
                                         <>
                                             <p className="text-sm font-semibold text-muted-foreground px-2 mt-2">
                                                 Admin
                                             </p>
+
+                                            <Button
+                                                variant="ghost"
+                                                className="justify-start pl-6"
+                                                asChild
+                                            >
+                                                <Link href="/home">Home</Link>
+                                            </Button>
+
+                                            <Button
+                                                variant="ghost"
+                                                className="justify-start pl-6"
+                                                asChild
+                                            >
+                                                <Link href="/admin/mypermission">
+                                                    My Permission
+                                                </Link>
+                                            </Button>
+
                                             <Button
                                                 variant="ghost"
                                                 className="justify-start pl-6"
@@ -134,6 +177,7 @@ export default function Navbar() {
                                         </>
                                     )}
                                 </div>
+
                                 <div className="mt-auto pb-4">
                                     <LogoutButton />
                                 </div>

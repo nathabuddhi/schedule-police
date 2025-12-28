@@ -156,3 +156,32 @@ export async function rejectPermission(
         };
     }
 }
+
+export async function getSelfPermissions(
+    initial: string
+): Promise<StandardResponse<Permission[]>> {
+    try {
+        console.log("[DB] fetching permissions for initial:", initial);
+
+        const permissions = (await sql`
+            SELECT *
+            FROM permissions
+            WHERE initial = ${initial}
+            ORDER BY id DESC
+        `) as Permission[];
+
+        console.log("[DB] permissions found:", permissions.length);
+
+        return {
+            success: true,
+            message: "User permissions fetched successfully.",
+            data: permissions,
+        };
+    } catch (error) {
+        console.error("Error fetching self permissions:", error);
+        return {
+            success: false,
+            message: "Failed to fetch user permissions.",
+        };
+    }
+}

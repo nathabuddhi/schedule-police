@@ -5,7 +5,9 @@ import {
     getRejectedPermissions,
     approvePermission,
     rejectPermission,
+    getSelfPermissions,
 } from "@/api-controller/permission/permission";
+import { getUserFromRequest } from "@/lib/server-auth";
 
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
@@ -17,9 +19,27 @@ export async function GET(req: Request) {
         case "approved":
             result = await getApprovedPermissions();
             break;
+
         case "rejected":
             result = await getRejectedPermissions();
             break;
+
+        case "self": {
+            const user = await getUserFromRequest();
+
+            console.log("[API] self user resolved:", user);
+
+            if (!user) {
+                return NextResponse.json(
+                    { success: false, message: "Unauthorized" },
+                    { status: 401 }
+                );
+            }
+
+            result = await getSelfPermissions(user.initial);
+            break;
+        }
+
         default:
             result = await getAllPermissions();
     }

@@ -246,9 +246,7 @@ export const MagicTweet = ({
   )
 }
 
-/**
- * TweetCard (Server Side Only)
- */
+
 export const TweetCard = async ({
   id,
   components,

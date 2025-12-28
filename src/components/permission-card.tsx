@@ -38,7 +38,7 @@ export function PermissionCard({
     return (
         <Card className="relative overflow-hidden border-white/20 bg-white/10 backdrop-blur-md dark:bg-black/20">
             <div className="relative p-5 space-y-4">
-                {/* Header */}
+              
                 <div className="flex items-start gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 text-white font-bold">
                         {getInitials(permission.initial)}
@@ -62,7 +62,7 @@ export function PermissionCard({
                     </div>
                 </div>
 
-                {/* Meta */}
+        
                 <div className="grid grid-cols-2 gap-2 text-[12px] text-muted-foreground">
                     <div className="bg-black/5 dark:bg-white/5 p-2 rounded-lg">
                         🕒 {permission.shiftid}
@@ -72,7 +72,7 @@ export function PermissionCard({
                     </div>
                 </div>
 
-                {/* Rejection reason (history only) */}
+    
                 {permission.status === "rejected" &&
                     permission.status_reason && (
                         <div className="text-sm p-3 rounded-xl bg-rose-500/10 text-rose-600 border border-rose-500/20">
@@ -81,7 +81,7 @@ export function PermissionCard({
                         </div>
                     )}
 
-                {/* Actions (ONLY for pending) */}
+     
                 {isPending && !showRejectionForm && (
                     <div className="flex gap-3 pt-2">
                         <Button
