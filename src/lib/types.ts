@@ -90,4 +90,16 @@ export interface NotifyTeachingMessage {
     mention: boolean;
 }
 
+export interface Permission {
+    id: string;
+    initial: string;
+    reason: string;
+    status: string;
+    status_reason: string | null;
+    class: string;
+    room: string;
+    course: string;
+    shiftid: string;
+}
+
 export type RegionMap = Record<string, NonPresentLecturer[]>;

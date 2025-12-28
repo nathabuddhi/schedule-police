@@ -37,7 +37,9 @@ export async function POST(request: NextRequest) {
                 manualCheckTeachingSchedule(payloadToProcess);
             } else if (text.startsWith("/updatestatus")) {
                 // manualCheckTeachingSchedule(payloadToProcess);
-            } else {
+            } else if (text.startsWith("/permission")) {
+                // manualCheckTeachingSchedule(payloadToProcess);
+            }else {
                 console.log("Received message:", payloadToProcess);
                 break;
             }

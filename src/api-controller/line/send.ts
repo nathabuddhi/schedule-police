@@ -115,7 +115,7 @@ export async function sendTeachingAttendanceByReply(
             const target =
                 lect.First.Status === "Substituted" ||
                 lect.First.Status === "Permission" ||
-                lect.First.Status === "Special Permission"
+                lect.First.Status === "SpecialPermission"
                     ? lect.Next
                     : lect.First;
             return `- ${target.UserName}: ${target.Status}`;
