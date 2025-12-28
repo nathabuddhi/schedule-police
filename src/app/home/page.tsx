@@ -1,49 +1,54 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 import Loading from "@/components/loading";
 import Navbar from "@/components/navbar";
 import { PermissionCard } from "@/components/permission-card";
 import { useAuthGuard } from "@/hooks/use-auth-guard";
+import { Button } from "@/components/ui/button";
+import type { Permission } from "@/lib/types";
 
-interface Permission {
-    id: string;
-    initial: string;
-    reason: string;
-    status: string;
-    status_reason: string | null;
-    class: string;
-    room: string;
-    course: string;
-    shiftid: string;
-}
+type PermissionFilter = "pending" | "approved" | "rejected";
 
 export default function Page() {
     const { user, loading } = useAuthGuard({ requireAuth: true });
+
     const [permissions, setPermissions] = useState<Permission[]>([]);
     const [fetching, setFetching] = useState(true);
+    const [filter, setFilter] = useState<PermissionFilter>("pending");
 
-    useEffect(() => {
-        async function fetchPermissions() {
-            try {
-                const res = await fetch("/api/permissions", {
-                    credentials: "include",
-                });
-                const json = await res.json();
-
-                if (json.success) {
-                    setPermissions(json.data);
-                }
-            } catch (err) {
-                console.error("Failed to fetch permissions:", err);
-            } finally {
-                setFetching(false);
-            }
+    const fetchPermissions = useCallback(async () => {
+        if (!user || user.role !== "ADMIN") {
+            setFetching(false);
+            return;
         }
 
-        if (user) fetchPermissions();
-    }, [user]);
+        setFetching(true);
+        try {
+            const url =
+                filter === "pending"
+                    ? "/api/permissions"
+                    : `/api/permissions?type=${filter}`;
+
+            const res = await fetch(url, {
+                credentials: "include",
+            });
+            const json = await res.json();
+
+            if (json.success) {
+                setPermissions(json.data);
+            }
+        } catch (err) {
+            console.error("Failed to fetch permissions:", err);
+        } finally {
+            setFetching(false);
+        }
+    }, [user, filter]);
+
+    useEffect(() => {
+        fetchPermissions();
+    }, [fetchPermissions]);
 
     if (loading || fetching) return <Loading />;
     if (!user) return null;
@@ -52,36 +57,113 @@ export default function Page() {
         <div className="min-h-screen bg-background">
             <Navbar />
 
-            <div className="max-w-2xl mx-auto p-6 space-y-8">
-                {permissions.length > 0 ? (
-                    permissions.map((p) => (
-                        <PermissionCard
-                            key={p.id}
-                            request={{
-                                id: p.id,
-                                senderName: p.initial,
-                                reason: p.reason,
-                                classCode: p.class,
-                                time: p.shiftid,
-                                courseCode: p.course,
-                                room: p.room,
-                            }}
-                            onApprove={(id) => console.log("Approved:", id)}
-                            onReject={(id, reason) =>
-                                console.log("Rejected:", id, reason)
-                            }
-                        />
-                    ))
-                ) : (
+            <div className="max-w-2xl mx-auto p-6 space-y-6">
+                {user.role !== "ADMIN" ? (
                     <div className="w-full flex flex-col justify-center items-center text-center py-10">
                         <h1 className="text-xl font-medium">
-                            Well unfortunately, there&apos;s nothing here yet...
+                            Create Permission Request
                         </h1>
                         <p className="text-muted-foreground mt-2">
-                            But perhaps, in the meantime, go ahead and connect
-                            your line account in the navbar!
+                            Please wait for a review from RMO
                         </p>
                     </div>
+                ) : (
+                    <>
+                        {/* Filter buttons */}
+                        <div className="flex gap-2">
+                            <Button
+                                variant={
+                                    filter === "pending" ? "default" : "outline"
+                                }
+                                onClick={() => setFilter("pending")}
+                            >
+                                Pending
+                            </Button>
+                            <Button
+                                variant={
+                                    filter === "approved"
+                                        ? "default"
+                                        : "outline"
+                                }
+                                onClick={() => setFilter("approved")}
+                            >
+                                Approved
+                            </Button>
+                            <Button
+                                variant={
+                                    filter === "rejected"
+                                        ? "default"
+                                        : "outline"
+                                }
+                                onClick={() => setFilter("rejected")}
+                            >
+                                Rejected
+                            </Button>
+                        </div>
+
+                        {/* Permission list */}
+                        {permissions.length > 0 ? (
+                            permissions.map((p) => (
+                                <PermissionCard
+                                    key={p.id}
+                                    request={{
+                                        id: p.id,
+                                        senderName: p.initial,
+                                        reason: p.reason,
+                                        classCode: p.class,
+                                        time: p.shiftid,
+                                        courseCode: p.course,
+                                        room: p.room,
+                                        status: p.status as
+                                            | "pending"
+                                            | "approved"
+                                            | "rejected",
+                                        statusReason: p.status_reason,
+                                    }}
+                                    onApprove={async (id) => {
+                                        await fetch("/api/permissions", {
+                                            method: "PATCH",
+                                            headers: {
+                                                "Content-Type":
+                                                    "application/json",
+                                            },
+                                            body: JSON.stringify({
+                                                action: "approve",
+                                                id,
+                                            }),
+                                        });
+
+                                        fetchPermissions();
+                                    }}
+                                    onReject={async (id, reason) => {
+                                        await fetch("/api/permissions", {
+                                            method: "PATCH",
+                                            headers: {
+                                                "Content-Type":
+                                                    "application/json",
+                                            },
+                                            body: JSON.stringify({
+                                                action: "reject",
+                                                id,
+                                                reason,
+                                            }),
+                                        });
+
+                                        fetchPermissions();
+                                    }}
+                                />
+                            ))
+                        ) : (
+                            <div className="w-full flex flex-col justify-center items-center text-center py-10">
+                                <h1 className="text-xl font-medium">
+                                    No {filter} permissions
+                                </h1>
+                                <p className="text-muted-foreground mt-2">
+                                    You're all caught up!
+                                </p>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </div>
