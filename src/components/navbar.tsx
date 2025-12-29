@@ -92,6 +92,16 @@ export default function Navbar() {
                                                 Manage Regions
                                             </Link>
                                         </NavigationMenuLink> */}
+                                        <Button
+                                            variant="ghost"
+                                            className="text-left"
+                                            onClick={() =>
+                                                fetch("/api/admin/shift", {
+                                                    method: "PUT",
+                                                })
+                                            }>
+                                            Refresh Shift Data
+                                        </Button>
                                     </NavigationMenuContent>
                                 </NavigationMenuItem>
                             )}

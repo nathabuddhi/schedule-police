@@ -37,7 +37,15 @@ export async function updateRole(
             UPDATE assistants
             SET role = ${role}
             WHERE initial = ${initial}
+            RETURNING id
         `;
+
+        if (result.length === 0) {
+            return {
+                success: false,
+                message: "No assistant found with the given initial.",
+            };
+        }
 
         return {
             success: true,
