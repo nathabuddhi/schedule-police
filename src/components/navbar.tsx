@@ -72,10 +72,6 @@ export default function Navbar() {
                 <div className="px-30 py-2">
                     <NavigationMenu>
                         <NavigationMenuList>
-                            <NavigationMenuItem>
-                                <LinkAccountDialog />
-                            </NavigationMenuItem>
-
                             {user.role === "ADMIN" && (
                                 <NavigationMenuItem>
                                     <NavigationMenuTrigger>
@@ -84,33 +80,33 @@ export default function Navbar() {
                                     <NavigationMenuContent className="px-4 py-3 w-[220px] space-y-2">
                                         <NavigationMenuLink asChild>
                                             <Link
-                                                href="/home"
-                                                className="block rounded-md px-2 py-2 hover:bg-muted transition-colors"
-                                            >
-                                                Manage Permissions
-                                            </Link>
-                                        </NavigationMenuLink>
-
-                                        <NavigationMenuLink asChild>
-                                            <Link
-                                                href="/admin/mypermissions"
-                                                className="block rounded-md px-2 py-2 hover:bg-muted transition-colors"
-                                            >
-                                                My Own Permissions
-                                            </Link>
-                                        </NavigationMenuLink>
-
-                                        <NavigationMenuLink asChild>
-                                            <Link
                                                 href="/admin/assistants"
-                                                className="block rounded-md px-2 py-2 hover:bg-muted transition-colors"
-                                            >
-                                                Manage Assistants List
+                                                className="block rounded-md px-2 py-2 hover:bg-muted transition-colors">
+                                                Manage Assistants
                                             </Link>
                                         </NavigationMenuLink>
+                                        {/* <NavigationMenuLink asChild>
+                                            <Link
+                                                href="/admin/region"
+                                                className="block rounded-md px-2 py-2 hover:bg-muted transition-colors">
+                                                Manage Regions
+                                            </Link>
+                                        </NavigationMenuLink> */}
                                     </NavigationMenuContent>
                                 </NavigationMenuItem>
                             )}
+                            <NavigationMenuItem>
+                                <Button variant="ghost">
+                                    <Link
+                                        href="/home"
+                                        className="block rounded-md px-2 py-2 transition-colors">
+                                        Home
+                                    </Link>
+                                </Button>
+                            </NavigationMenuItem>
+                            <NavigationMenuItem>
+                                <LinkAccountDialog />
+                            </NavigationMenuItem>
                         </NavigationMenuList>
                     </NavigationMenu>
                 </div>
@@ -130,8 +126,7 @@ export default function Navbar() {
 
                             <SheetContent
                                 side="right"
-                                className="w-[280px] flex flex-col"
-                            >
+                                className="w-[280px] flex flex-col">
                                 <SheetHeader>
                                     <SheetTitle className="text-left">
                                         Hello, {user.username}
@@ -150,16 +145,14 @@ export default function Navbar() {
                                             <Button
                                                 variant="ghost"
                                                 className="justify-start pl-6"
-                                                asChild
-                                            >
+                                                asChild>
                                                 <Link href="/home">Home</Link>
                                             </Button>
 
                                             <Button
                                                 variant="ghost"
                                                 className="justify-start pl-6"
-                                                asChild
-                                            >
+                                                asChild>
                                                 <Link href="/admin/mypermission">
                                                     My Permission
                                                 </Link>
@@ -168,8 +161,7 @@ export default function Navbar() {
                                             <Button
                                                 variant="ghost"
                                                 className="justify-start pl-6"
-                                                asChild
-                                            >
+                                                asChild>
                                                 <Link href="/admin/assistants">
                                                     Manage Assistants List
                                                 </Link>
