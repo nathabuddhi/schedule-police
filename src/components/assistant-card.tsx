@@ -19,11 +19,8 @@ export function AssistantCard({ assistant, onRoleChange }: AssistantCardProps) {
                 transition-all
                 dark:bg-zinc-950 dark:border-zinc-800 dark:hover:border-zinc-700
                 bg-white border-zinc-200 hover:border-zinc-300
-            "
-        >
-
+            ">
             <div className="flex items-center gap-4 min-w-0">
-
                 <div
                     className="
                         w-12 h-12 shrink-0 rounded-full
@@ -34,8 +31,7 @@ export function AssistantCard({ assistant, onRoleChange }: AssistantCardProps) {
                 
                         dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400
                         dark:group-hover:border-zinc-700
-                    "
-                >
+                    ">
                     {assistant.initial.slice(0, 2).toUpperCase()}
                 </div>
 
@@ -49,16 +45,11 @@ export function AssistantCard({ assistant, onRoleChange }: AssistantCardProps) {
                 </div>
             </div>
 
-    
             <div className="flex items-center gap-3 shrink-0">
                 <span
                     className={cn(
-                        "text-[10px] font-bold tracking-widest uppercase transition-colors",
-                        isAdmin
-                            ? "text-zinc-500"
-                            : "text-blue-600 dark:text-blue-500"
-                    )}
-                >
+                        "text-[10px] font-bold tracking-widest uppercase transition-colors text-zinc-500"
+                    )}>
                     AST
                 </span>
 
@@ -70,9 +61,8 @@ export function AssistantCard({ assistant, onRoleChange }: AssistantCardProps) {
                         "focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400",
                         isAdmin
                             ? "bg-purple-600 shadow-[0_0_15px_-3px_rgba(147,51,234,0.5)]"
-                            : "bg-blue-600 dark:bg-blue-500"
-                    )}
-                >
+                            : "bg-gray-600 dark:bg-gray -500"
+                    )}>
                     <span
                         className={cn(
                             "inline-block h-5 w-5 rounded-full bg-white transition-transform duration-300 shadow-sm",
@@ -85,8 +75,7 @@ export function AssistantCard({ assistant, onRoleChange }: AssistantCardProps) {
                     className={cn(
                         "text-[10px] font-bold tracking-widest uppercase transition-colors",
                         isAdmin ? "text-purple-600" : "text-zinc-500"
-                    )}
-                >
+                    )}>
                     ADMIN
                 </span>
             </div>
