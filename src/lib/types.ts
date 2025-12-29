@@ -94,12 +94,12 @@ export interface Permission {
     id: string;
     initial: string;
     reason: string;
-    status: string;
-    status_reason: string | null;
+    status?: string;
+    status_reason?: string;
     class: string;
     room: string;
     course: string;
-    shiftid: string;
+    shift: Shift;
 }
 
 export interface Assistant {
@@ -111,7 +111,5 @@ export interface AssistantCardProps {
     assistant: Assistant;
     onRoleChange: (newRole: string) => void;
 }
-
-
 
 export type RegionMap = Record<string, NonPresentLecturer[]>;

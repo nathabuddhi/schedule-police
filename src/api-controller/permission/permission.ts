@@ -1,31 +1,36 @@
 import { sql } from "@/lib/neon";
 import { StandardResponse } from "@/lib/types";
-import type { Permission } from "@/lib/types";
+import type { Permission, User } from "@/lib/types";
+// import { v4 as uuidv4 } from "uuid";
 
-export async function getAllPermissions(): Promise<
-    StandardResponse<Permission[]>
-> {
+export async function getAllPermissions(
+    user: User
+): Promise<StandardResponse<Permission[]>> {
     try {
-        const permissions = (await sql`
-            SELECT 
-                id,
-                initial,
-                reason,
-                status,
-                status_reason,
-                class,
-                room,
-                course,
-                shiftid
-            FROM permissions
-            WHERE status = 'pending'
-            ORDER BY id DESC
-        `) as Permission[];
+        const query =
+            user.role !== "ADMIN"
+                ? sql`SELECT *
+                        FROM permissions p
+                        JOIN shifts s ON s."ShiftId" = p.shift_id
+                    WHERE initial = ${user.username}`
+                : sql`SELECT * 
+                        FROM permissions p
+                        JOIN shifts s ON s."ShiftId" = p.shift_id`;
+        const permissions = await sql`${query}`;
+
+        const mapped = permissions.map((p) => ({
+            ...p,
+            shift: {
+                ShiftId: p.ShiftId ?? "UNKNOWN",
+                Start: p.Start ?? "UNKNOWN",
+                End: p.End ?? "UNKNOWN",
+            },
+        })) as Permission[];
 
         return {
             success: true,
-            message: "Pending permissions fetched successfully.",
-            data: permissions,
+            message: "All permissions fetched successfully.",
+            data: mapped,
         };
     } catch (error) {
         console.error("Error fetching pending permissions:", error);
@@ -36,87 +41,63 @@ export async function getAllPermissions(): Promise<
     }
 }
 
-export async function getRejectedPermissions(): Promise<
-    StandardResponse<Permission[]>
-> {
+export async function getPermissionByStatus(
+    status: string,
+    user: User
+): Promise<StandardResponse<Permission[]>> {
     try {
-        const permissions = (await sql`
-            SELECT 
-                id,
-                initial,
-                reason,
-                status,
-                status_reason,
-                class,
-                room,
-                course,
-                shiftid
-            FROM permissions
-            WHERE status = 'rejected'
-            ORDER BY id DESC
-            LIMIT 5
-        `) as Permission[];
+        const query =
+            user.role !== "ADMIN"
+                ? sql`SELECT * FROM permissions p
+                        JOIN shifts s ON s."ShiftId" = p.shift_id WHERE status = ${status} AND initial = ${user.username}`
+                : sql`SELECT * FROM permissions p
+                        JOIN shifts s ON s."ShiftId" = p.shift_id WHERE status = ${status}`;
+
+        const permissions = await sql`${query}`;
+
+        const mapped = permissions.map((p) => ({
+            ...p,
+            shift: {
+                ShiftId: p.ShiftId ?? "UNKNOWN",
+                Start: p.Start ?? "UNKNOWN",
+                End: p.End ?? "UNKNOWN",
+            },
+        })) as Permission[];
 
         return {
             success: true,
-            message: "Last 5 rejected permissions fetched successfully.",
-            data: permissions,
+            message: `${status} permissions fetched successfully.`,
+            data: mapped,
         };
     } catch (error) {
-        console.error("Error fetching rejected permissions:", error);
+        console.error(`Error fetching ${status} permissions:`, error);
         return {
             success: false,
-            message: "Failed to fetch rejected permissions.",
-        };
-    }
-}
-
-export async function getApprovedPermissions(): Promise<
-    StandardResponse<Permission[]>
-> {
-    try {
-        const permissions = (await sql`
-            SELECT 
-                id,
-                initial,
-                reason,
-                status,
-                status_reason,
-                class,
-                room,
-                course,
-                shiftid
-            FROM permissions
-            WHERE status = 'approved'
-            ORDER BY id DESC
-            LIMIT 5
-        `) as Permission[];
-
-        return {
-            success: true,
-            message: "Last 5 approved permissions fetched successfully.",
-            data: permissions,
-        };
-    } catch (error) {
-        console.error("Error fetching approved permissions:", error);
-        return {
-            success: false,
-            message: "Failed to fetch approved permissions.",
+            message: "Failed to fetch pending permissions.",
         };
     }
 }
 
 export async function approvePermission(
-    id: string
+    id: string,
+    reason?: string
 ): Promise<StandardResponse<null>> {
     try {
         const result = await sql`
             UPDATE permissions
             SET 
                 status = 'approved',
-                status_reason = NULL
+                status_reason = ${reason ?? null}
             WHERE id = ${id}
+            RETURNING id
         `;
+
+        if (result.length === 0) {
+            return {
+                success: false,
+                message: "No permission found with the given ID.",
+            };
+        }
 
         return {
             success: true,
@@ -136,13 +117,28 @@ export async function rejectPermission(
     reason: string
 ): Promise<StandardResponse<null>> {
     try {
+        if (!reason || reason.trim() === "") {
+            return {
+                success: false,
+                message: "Rejection reason cannot be empty.",
+            };
+        }
+
         const result = await sql`
             UPDATE permissions
             SET 
                 status = 'rejected',
                 status_reason = ${reason}
             WHERE id = ${id}
+            RETURNING id
         `;
+
+        if (result.length === 0) {
+            return {
+                success: false,
+                message: "No permission found with the given ID.",
+            };
+        }
 
         return {
             success: true,
@@ -157,91 +153,73 @@ export async function rejectPermission(
     }
 }
 
-export async function getSelfPermissions(
-    initial: string
-): Promise<StandardResponse<Permission[]>> {
-    try {
-        console.log("[DB] fetching permissions for initial:", initial);
+// export async function createPermission(
+//     payload: Permission
+// ): Promise<StandardResponse<Permission>> {
+//     try {
+//         const {
+//             initial,
+//             reason,
+//             class: classCode,
+//             room,
+//             course,
+//             shift_id,
+//         } = payload;
 
-        const permissions = (await sql`
-            SELECT *
-            FROM permissions
-            WHERE initial = ${initial}
-            ORDER BY id DESC
-        `) as Permission[];
+//         const new_id = uuidv4();
 
-        console.log("[DB] permissions found:", permissions.length);
+//         const rows = (await sql`
+//             INSERT INTO permissions (
+//                 id,
+//                 initial,
+//                 reason,
+//                 class,
+//                 room,
+//                 course,
+//                 shift_id,
+//                 status,
+//                 status_reason
+//             )
+//             VALUES (
+//                 ${new_id},
+//                 ${initial},
+//                 ${reason},
+//                 ${classCode},
+//                 ${room},
+//                 ${course},
+//                 ${shift_id},
+//                 'pending',
+//                 NULL
+//             )
+//             RETURNING
+//                 id,
+//                 initial,
+//                 reason,
+//                 status,
+//                 status_reason,
+//                 class,
+//                 room,
+//                 course,
+//                 shift_id
+//         `) as Permission[];
 
-        return {
-            success: true,
-            message: "User permissions fetched successfully.",
-            data: permissions,
-        };
-    } catch (error) {
-        console.error("Error fetching self permissions:", error);
-        return {
-            success: false,
-            message: "Failed to fetch user permissions.",
-        };
-    }
-}
+//         if (rows.length === 0) {
+//             return {
+//                 success: false,
+//                 message: "Unknown Error - Failed to create permission.",
+//             };
+//         }
 
-export async function createPermission(
-    payload: Omit<Permission, "id" | "status" | "status_reason">
-): Promise<StandardResponse<Permission>> {
-    try {
-        const {
-            initial,
-            reason,
-            class: classCode,
-            room,
-            course,
-            shiftid,
-        } = payload;
-
-        const rows = (await sql`
-            INSERT INTO permissions (
-                initial,
-                reason,
-                class,
-                room,
-                course,
-                shiftid,
-                status,
-                status_reason
-            )
-            VALUES (
-                ${initial},
-                ${reason},
-                ${classCode},
-                ${room},
-                ${course},
-                ${shiftid},
-                'pending',
-                NULL
-            )
-            RETURNING 
-                id,
-                initial,
-                reason,
-                status,
-                status_reason,
-                class,
-                room,
-                course,
-                shiftid
-        `) as Permission[];
-
-        return {
-            success: true,
-            message: "Permission created successfully.",
-            data: rows[0],
-        };
-    } catch (error) {
-        console.error("Error creating permission:", error);
-        return {
-            success: false,
-            message: "Failed to create permission.",
-        };
-    }
-}
+//         return {
+//             success: true,
+//             message: "Permission created successfully.",
+//             data: rows[0],
+//         };
+//     } catch (error) {
+//         console.error("Error creating permission:", error);
+//         return {
+//             success: false,
+//             message: "Failed to create permission.",
+//         };
+//     }
+// }
