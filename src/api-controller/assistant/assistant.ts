@@ -59,3 +59,31 @@ export async function updateRole(
         };
     }
 }
+
+export async function getInitialFromLineId(
+    lineId: string
+): Promise<StandardResponse<string>> {
+    try {
+        const result = await sql`
+            SELECT initial FROM assistants WHERE line_id = ${lineId}
+        `;
+        if (result.length === 0) {
+            return {
+                success: false,
+                message: "No assistant found with the given Line ID.",
+            };
+        }
+
+        return {
+            success: true,
+            message: "Initial fetched successfully.",
+            data: result[0].initial,
+        };
+    } catch (error) {
+        console.error("Error fetching initial from Line ID:", error);
+        return {
+            success: false,
+            message: "Failed to fetch initial.",
+        };
+    }
+}

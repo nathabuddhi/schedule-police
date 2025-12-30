@@ -1,7 +1,10 @@
 import { sql } from "@/lib/neon";
 import { StandardResponse } from "@/lib/types";
 import type { Permission, User } from "@/lib/types";
-// import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from "uuid";
+import { getInitialFromLineId } from "@/api-controller/assistant/assistant";
+import { replyMessage } from "@/api-controller/line/send";
+import { getAttendanceData } from "@/api-controller/teaching/teaching";
 
 export async function getAllPermissions(
     user: User
@@ -153,73 +156,118 @@ export async function rejectPermission(
     }
 }
 
-// export async function createPermission(
-//     payload: Permission
-// ): Promise<StandardResponse<Permission>> {
-//     try {
-//         const {
-//             initial,
-//             reason,
-//             class: classCode,
-//             room,
-//             course,
-//             shift_id,
-//         } = payload;
+export async function createPermission(payload: {
+    replyToken: string;
+    source: { userId: string; groupId?: string };
+    message: { text: string };
+}): Promise<StandardResponse<Permission>> {
+    try {
+        const getInitialResponse = await getInitialFromLineId(
+            payload.source.userId
+        );
+        const reason = payload.message.text.split(" ")[1] || null;
 
-//         const new_id = uuidv4();
+        if (!getInitialResponse.success || !getInitialResponse.data) {
+            replyMessage(
+                payload.replyToken,
+                "You need to link your Line account to an assistant account before requesting permission."
+            );
+            return {
+                success: false,
+                message: "Line account not linked to any assistant account.",
+            };
+        }
 
-//         const rows = (await sql`
-//             INSERT INTO permissions (
-//                 id,
-//                 initial,
-//                 reason,
-//                 class,
-//                 room,
-//                 course,
-//                 shift_id,
-//                 status,
-//                 status_reason
-//             )
-//             VALUES (
-//                 ${new_id},
-//                 ${initial},
-//                 ${reason},
-//                 ${classCode},
-//                 ${room},
-//                 ${course},
-//                 ${shift_id},
-//                 'pending',
-//                 NULL
-//             )
-//             RETURNING
-//                 id,
-//                 initial,
-//                 reason,
-//                 status,
-//                 status_reason,
-//                 class,
-//                 room,
-//                 course,
-//                 shift_id
-//         `) as Permission[];
+        if (!reason) {
+            return {
+                success: false,
+                message: "Please provide a reason for the permission request.",
+            };
+        }
 
-//         if (rows.length === 0) {
-//             return {
-//                 success: false,
-//                 message: "Unknown Error - Failed to create permission.",
-//             };
-//         }
+        const initial = getInitialResponse.data;
+        const attendanceRawData = await getAttendanceData();
 
-//         return {
-//             success: true,
-//             message: "Permission created successfully.",
-//             data: rows[0],
-//         };
-//     } catch (error) {
-//         console.error("Error creating permission:", error);
-//         return {
-//             success: false,
-//             message: "Failed to create permission.",
-//         };
-//     }
-// }
+        const shift_id = attendanceRawData.shift?.ShiftId || null;
+
+        let transaction = null;
+
+        for (const attendance of attendanceRawData.attendance) {
+            for (const lect of attendance.Lecturers) {
+                const target =
+                    lect.First.Status === "Substituted" ||
+                    lect.First.Status === "Permission" ||
+                    lect.First.Status === "SpecialPermission"
+                        ? lect.Next
+                        : lect.First;
+                if (target.UserName === initial) {
+                    transaction = {
+                        classCode: attendance.ClassName,
+                        room: attendance.Room,
+                        course: attendance.CourseName,
+                    };
+                    break;
+                }
+            }
+        }
+
+        if (!transaction) {
+            replyMessage(
+                payload.replyToken,
+                "No teaching schedule found for you in the current shift."
+            );
+            return {
+                success: false,
+                message:
+                    "No teaching schedule found for you in the current shift.",
+            };
+        }
+
+        const new_id = uuidv4();
+
+        const rows = (await sql`
+            INSERT INTO permissions (
+                id,
+                initial,
+                reason,
+                class,
+                room,
+                course,
+                shift_id,
+                status,
+                status_reason
+            )
+            VALUES (
+                ${new_id},
+                ${initial},
+                ${reason},
+                ${transaction.classCode},
+                ${transaction.room},
+                ${transaction.course},
+                ${shift_id},
+                'pending',
+                NULL
+            )
+            RETURNING id
+        `) as Permission[];
+
+        if (rows.length === 0) {
+            return {
+                success: false,
+                message: "Unknown Error - Failed to create permission.",
+            };
+        }
+
+        return {
+            success: true,
+            message: "Permission created successfully.",
+            data: rows[0],
+        };
+    } catch (error) {
+        console.error("Error creating permission:", error);
+        return {
+            success: false,
+            message: "Failed to create permission.",
+        };
+    }
+}

@@ -47,7 +47,7 @@ async function getCurrentShift(nowDate: Date): Promise<ShiftWithDate | null> {
     return futureShifts[0];
 }
 
-async function getAttendanceData(): Promise<{
+export async function getAttendanceData(): Promise<{
     attendance: Attendance[];
     shift: ShiftWithDate | null;
 }> {

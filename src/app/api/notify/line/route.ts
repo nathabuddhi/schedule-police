@@ -6,6 +6,16 @@ import {
     manualNotifyTeachingSchedule,
     manualCheckTeachingSchedule,
 } from "@/api-controller/teaching/teaching";
+import { createPermission } from "@/api-controller/permission/permission";
+import { replyMessage } from "@/api-controller/line/send";
+
+const HelpMessage = `Available Commands:
+
+/checkmessier [region] - Display current teaching schedule.
+/notifymessier - Display & notify current teaching schedule.
+/latepermission [reason] - Request permission for being late.
+
+To connect your line account, visit https://schedule-police.vercel.app and follow the instructions.`;
 
 export async function POST(request: NextRequest) {
     const body = await request.text();
@@ -27,7 +37,9 @@ export async function POST(request: NextRequest) {
     switch (payloadToProcess.type) {
         case "message":
             const text = payloadToProcess.message.text;
-            if (text.startsWith("CONNECT_LINE_ID-")) {
+            if (text === "/help") {
+                replyMessage(payloadToProcess.replyToken, HelpMessage);
+            } else if (text.startsWith("CONNECT_LINE_ID-")) {
                 HandleConnectRequest(payloadToProcess);
                 break;
             } else if (text === "/notifymessier") {
@@ -35,11 +47,11 @@ export async function POST(request: NextRequest) {
                 break;
             } else if (text.startsWith("/checkmessier")) {
                 manualCheckTeachingSchedule(payloadToProcess);
-            } else if (text.startsWith("/updatestatus")) {
+            } else if (text.startsWith("/acceptpermission")) {
                 // manualCheckTeachingSchedule(payloadToProcess);
-            } else if (text.startsWith("/permission")) {
-                // manualCheckTeachingSchedule(payloadToProcess);
-            }else {
+            } else if (text.startsWith("/latepermission")) {
+                createPermission(payloadToProcess);
+            } else {
                 console.log("Received message:", payloadToProcess);
                 break;
             }
