@@ -179,6 +179,10 @@ export async function createPermission(payload: {
         }
 
         if (!reason) {
+            replyMessage(
+                payload.replyToken,
+                "Please provide a reason for the permission request."
+            );
             return {
                 success: false,
                 message: "Please provide a reason for the permission request.",
