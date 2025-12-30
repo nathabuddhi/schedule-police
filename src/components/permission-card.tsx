@@ -62,7 +62,16 @@ export function PermissionCard({
 
                 <div className="grid grid-cols-2 gap-2 text-[12px] text-muted-foreground">
                     <div className="bg-black/5 dark:bg-white/5 p-2 rounded-lg">
+                        📅{" "}
+                        {new Date(permission.created_at).toLocaleDateString()}
+                    </div>
+                    <div className="bg-black/5 dark:bg-white/5 p-2 rounded-lg">
                         🕒 {permission.shift.Start} - {permission.shift.End}
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[12px] text-muted-foreground">
+                    <div className="bg-black/5 dark:bg-white/5 p-2 rounded-lg">
+                        📑 {permission.course}
                     </div>
                     <div className="bg-black/5 dark:bg-white/5 p-2 rounded-lg">
                         📍 Room {permission.room}

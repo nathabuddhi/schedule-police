@@ -100,6 +100,7 @@ export interface Permission {
     room: string;
     course: string;
     shift: Shift;
+    created_at: string;
 }
 
 export interface Assistant {
