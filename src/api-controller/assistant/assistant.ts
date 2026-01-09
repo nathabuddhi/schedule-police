@@ -37,7 +37,7 @@ export async function updateRole(
             UPDATE assistants
             SET role = ${role}
             WHERE initial = ${initial}
-            RETURNING id
+            RETURNING initial
         `;
 
         if (result.length === 0) {
